@@ -1,0 +1,10 @@
+{
+  "short_name": "NB",
+  "version": "0.1.0",
+  "name": "NB",
+  "description": "Colored n-back",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#001b26",
+  "theme_color": "#204b56"
+}

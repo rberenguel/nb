@@ -1,0 +1,102 @@
+:root {
+  --dark-background: #001b26;
+  --slighty-lighter-dark-background: #204b56;
+  --sd-yellow: #b58900;
+  --sd-orange: #cb4b16;
+  --sd-red: #dc322f;
+  --sd-magenta: #d33682;
+  --sd-violet: #6c71c4;
+  --sd-blue: #268bd2;
+  --sd-cyan: #2aa198;
+  --sd-green: #859900;
+  --sd-light: #fdf6e3FF;
+}
+
+body {
+  background-color: var(--dark-background);
+}
+
+.matrix {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 equal columns */
+  grid-template-rows: repeat(3, 1fr); /* 3 equal rows */
+  max-width: 768px;
+  width: 100%; /* Take full width up to the max */
+  margin: 0 auto; /* Center the matrix horizontally */
+}
+
+.inner-square {
+  border-radius: 1em;
+  margin: 1em;
+  aspect-ratio: 1/1; /* Maintain square aspect ratio */
+  border: 2em solid;
+  transition: border-color 0.5s ease-in-out;
+}
+
+.front {
+  z-index: 10; /* Ensure buttons are on top */
+}
+
+.back {
+  display: none;
+  z-index: -1; /* Ensure buttons are on top */
+}
+
+#top-button {
+  width: 100%;
+  /*min-height: 2em;*/
+  font-size: 2em;
+  color: var(--sd-light);
+  font-family: sans-serif;
+  text-align: center;
+  padding-top: 0.1em;
+  padding-bottom: 0.1em;
+}
+
+#left-button, #middle-button, #right-button {
+  position: fixed; /* Position over the content */
+  top: 0;
+  bottom: 0;
+  width: 33%;  /* Cover 1/3 of the screen width */
+  cursor: pointer; /* Indicate clickability */
+  font-family: sans-serif;
+}
+
+#left-button {
+  left: 0;
+  color: var(--sd-light);
+  writing-mode: vertical-lr;
+  text-orientation: upright;
+}
+
+#middle-button {
+  left: 33%;
+}
+
+#left-button > div {
+  padding-top: -2em;
+  width: 100%;
+  text-align: center;
+}
+#left-button > p {
+  border-radius: 0.3em;
+}
+
+#right-button {
+  right: 0;
+  color: var(--sd-light);
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+}
+
+#right-button > div {
+  padding-top: -2em;
+  width: 100%;
+  text-align: center;
+}
+#right-button > p {
+  border-radius: 0.3em;
+}
+
+
+
