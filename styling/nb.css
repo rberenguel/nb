@@ -1,6 +1,7 @@
 :root {
   --dark-background: #001b26;
-  --slighty-lighter-dark-background: #204b56;
+  --lighter-dark-background: #204b56;
+  --slighty-lighter-dark-background: #102b36;
   --sd-yellow: #b58900;
   --sd-orange: #cb4b16;
   --sd-red: #dc322f;
@@ -14,6 +15,51 @@
 
 body {
   background-color: var(--dark-background);
+}
+
+#modal {
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%; 
+  height: 100%; 
+  overflow: auto; 
+}
+
+#modal-content {
+  font-size: 2em;
+  color: var(--sd-light);
+  background-color: var(--slighty-lighter-dark-background);
+  margin: 15% auto; 
+  padding: 20px;
+  border: 1px solid var(--sd-cyan);
+  border-radius: 0.5em;
+  width: 50%; 
+  min-height: 30vh; /* At least 30% of viewport height */
+}
+
+#circular-progress {
+  position: fixed;
+  /*right: 3em;  To avoid overlapping with the right button */ 
+  width: 3em;
+  height: 3em;
+}
+
+.background-circle {
+  fill: none;
+  stroke: var(--sd-dark-background);
+  stroke-width: 10;
+}
+
+.progress-circle {
+  fill: none;
+  stroke: var(--sd-light);
+  stroke-width: 10;
+  stroke-dasharray: 251; /* Circumference */
+  stroke-dashoffset: 251; /* Initially hidden */
+  transform-origin: center; /* Rotate from center */
+  transition: stroke-dashoffset 0.1s linear; /* Smooth transition */
 }
 
 .matrix {
@@ -47,7 +93,7 @@ body {
   /*min-height: 2em;*/
   font-size: 2em;
   color: var(--sd-light);
-  font-family: sans-serif;
+  font-family: "Inter";
   text-align: center;
   padding-top: 0.1em;
   padding-bottom: 0.1em;
@@ -59,7 +105,7 @@ body {
   bottom: 0;
   width: 33%;  /* Cover 1/3 of the screen width */
   cursor: pointer; /* Indicate clickability */
-  font-family: sans-serif;
+  font-family: "Inter";
 }
 
 #left-button {

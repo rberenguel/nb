@@ -1,26 +1,34 @@
 <!doctype html>
 <html>
   <head>
-    <link rel="stylesheet" type='text/css' href="nb.css">
+    <link rel="stylesheet" type='text/css' href="styling/nb.css">
     </style>
   </head>
   <body style="margin:0">
+    <div id="circular-progress">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="40" class="background-circle" />
+        <circle cx="50" cy="50" r="40" class="progress-circle" />
+      </svg>
+    </div>
+    <div id="modal" class="back"><div id="modal-content"></div></div>
     <div id="top-button">1</div>
     <div id="left-button" class="back"><div><p>Position</p></div></div>
     <div id="middle-button" class="back"></div>
     <div id="right-button" class="back"><div><p>Color</p></div></div>
     <div class="matrix">
-        <div id="d0" class="inner-square"></div>
-        <div id="d1" class="inner-square"></div>
-        <div id="d2" class="inner-square"></div>
-        <div id="d3" class="inner-square"></div>
-        <div id="d4" class="inner-square"></div>
-        <div id="d5" class="inner-square"></div>
-        <div id="d6" class="inner-square"></div>
-        <div id="d7" class="inner-square"></div>
-        <div id="d8" class="inner-square"></div>
+      <div id="d0" class="inner-square"></div>
+      <div id="d1" class="inner-square"></div>
+      <div id="d2" class="inner-square"></div>
+      <div id="d3" class="inner-square"></div>
+      <div id="d4" class="inner-square"></div>
+      <div id="d5" class="inner-square"></div>
+      <div id="d6" class="inner-square"></div>
+      <div id="d7" class="inner-square"></div>
+      <div id="d8" class="inner-square"></div>
     </div>
 
   </body>
   <script src="nb.js"></script>
+  <link rel="stylesheet" href="styling/inter.css" />
 </html>

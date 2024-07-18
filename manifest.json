@@ -3,6 +3,13 @@
   "version": "0.1.0",
   "name": "NB",
   "description": "Colored n-back",
+  "icons": [
+    {
+      "src": "./icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#001b26",
