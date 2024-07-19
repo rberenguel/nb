@@ -108,10 +108,12 @@ body {
 
 #left-button, #right-button {
   width: 40%;  /* Make the answers larger */
+  background-color: rgba(0,0,0,0);
 }
 
 #middle-button {
   width: 20%;
+  background-color: rgba(0,0,0,0);
 }
 
 #left-button {
@@ -148,5 +150,4 @@ body {
 .button-transition {
   transition: background-color 1s ease-out !important;
 }
-
 
