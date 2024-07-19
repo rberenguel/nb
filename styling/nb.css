@@ -66,14 +66,14 @@ body {
   display: grid;
   grid-template-columns: repeat(3, 1fr); /* 3 equal columns */
   grid-template-rows: repeat(3, 1fr); /* 3 equal rows */
-  max-width: 768px;
+  max-width: 1024px;
   width: 100%; /* Take full width up to the max */
   margin: 0 auto; /* Center the matrix horizontally */
 }
 
 .inner-square {
   border-radius: 1em;
-  margin: 1em;
+  margin: 0.5em;
   aspect-ratio: 1/1; /* Maintain square aspect ratio */
   border: 2em solid;
   transition: border-color 0.5s ease-in-out;
@@ -90,13 +90,13 @@ body {
 
 #top-button {
   width: 100%;
-  /*min-height: 2em;*/
+  min-height: 2em;
   font-size: 2em;
   color: var(--sd-light);
   font-family: "Inter";
   text-align: center;
-  padding-top: 0.1em;
-  padding-bottom: 0.1em;
+  padding-top: 1.0em;
+  padding-bottom: 0.5em;
 }
 
 #left-button, #middle-button, #right-button {
