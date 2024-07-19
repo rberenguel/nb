@@ -6,7 +6,7 @@ let total = 0
 window.active = false
 let timeRemaining;
 let progressInterval;
-
+let lastReply
 
 const colors = [
   '--sd-yellow', '--sd-orange', '--sd-magenta',
@@ -18,25 +18,30 @@ function getRandomSolarizedColor() {
   return colors[randomIndex];
 }
 
-let lastReply
 function resetReply() {
   lastReply = { position: false, color: false };
 }
 
+function resetEverything(){
+  history = [];
+  correctPosC = 0;
+  correctColC = 0;
+  total = 0;
+  resetReply();
+}
+
 Array.from(document.querySelectorAll('.inner-square')).map(e => {
   e.addEventListener('click', ev => {
+    if(window.active){
+      return;
+    }
     BACK = +(e.id.replace("d", ""))+1
     document.getElementById("top-button").textContent = BACK;
-    history = []
-    correctPosC = 0
-    correctColC = 0
-    total = 0
-    document.getElementById(`left-button`).querySelector("p").style.backgroundColor = "";
-    document.getElementById(`right-button`).querySelector("p").style.backgroundColor = "";
+    resetEverything()  
   })
-})
+});
 
-const modal = document.getElementById("modal")
+const modal = document.getElementById("modal");
 
 modal.addEventListener("click", (e) => {
   document.getElementById("modal").classList.remove("front");
@@ -46,65 +51,75 @@ modal.addEventListener("click", (e) => {
 
 function showResults(){
   if(total==0){
-    const p = document.createElement("P")
-    p.textContent = "Not enough rounds to have statistics"
-    return
+    const p = document.createElement("P");
+    p.textContent = "Not enough rounds to have statistics";
+    return;
   }
   const pctPos = 100*correctPosC / total;
   const pctCol = 100*correctColC / total;
   const modalContent = modal.querySelector("#modal-content");
-  modalContent.innerHTML = ""
-  const p1 = document.createElement("P")
-  const p2 = document.createElement("P")
-  p1.innerHTML = `Positions: <span style="float: right;">${correctPosC} / ${total} (${pctPos.toFixed(2)})</span>`
-  p2.innerHTML = `Colors: <span style="float: right;"> ${correctColC} / ${total} (${pctPos.toFixed(2)})</span>`
-  modalContent.appendChild(p1)
-  modalContent.appendChild(p2)
+  modalContent.innerHTML = "";
+  const p1 = document.createElement("P");
+  const p2 = document.createElement("P");
+  p1.innerHTML = `Positions: <span style="float: right;">${correctPosC} / ${total} (${pctPos.toFixed(2)})</span>`;
+  p2.innerHTML = `Colors: <span style="float: right;"> ${correctColC} / ${total} (${pctPos.toFixed(2)})</span>`;
+  modalContent.appendChild(p1);
+  modalContent.appendChild(p2);
 }
 
 function startStop() {
   console.info('Start/stop');
-  const squares = Array.from(document.querySelectorAll(".inner-square"))
+  const squares = Array.from(document.querySelectorAll(".inner-square"));
   if(window.active){
-    document.getElementById("left-button").classList.add("back")
-    document.getElementById("right-button").classList.add("back")
-    document.getElementById("middle-button").classList.add("back")
-    document.getElementById("left-button").classList.remove("front")
-    document.getElementById("right-button").classList.remove("front")
-    document.getElementById("middle-button").classList.remove("front")
-    clearInterval(window.active)
+    document.getElementById("left-button").classList.add("back");
+    document.getElementById("right-button").classList.add("back");
+    document.getElementById("middle-button").classList.add("back");
+    document.getElementById("left-button").classList.remove("front");
+    document.getElementById("right-button").classList.remove("front");
+    document.getElementById("middle-button").classList.remove("front");
+    clearInterval(window.active);
     window.active = false;
-    squares.map(e => e.style.borderColor = "var(--slighty-lighter-dark-background)")
+    history = [] // Reset history, so it starts again from the beginning.
+    // TODO the button text should not show until we can answer
+    squares.map(e => e.style.borderColor = "var(--slighty-lighter-dark-background)");
     document.getElementById("modal").classList.remove("back");
     document.getElementById("modal").classList.add("front");
     showResults();
   } else {
     document.getElementById("top-button").textContent = BACK;
-    document.getElementById("left-button").classList.add("front")
-    document.getElementById("right-button").classList.add("front")
-    document.getElementById("middle-button").classList.add("front")
-    document.getElementById("left-button").classList.remove("back")
-    document.getElementById("right-button").classList.remove("back")
-    document.getElementById("middle-button").classList.remove("back")
+    document.getElementById("middle-button").classList.add("front");
+    document.getElementById("middle-button").classList.remove("back");
     document.getElementById("modal").classList.add("back");
     document.getElementById("modal").classList.remove("front");
-    stepping()
-    window.active = setInterval(stepping, 4000)
-    squares.map(e => e.style.borderColor = "black")
+    stepping();
+    window.active = setInterval(stepping, 4000);
+    squares.map(e => e.style.borderColor = "black");
   }
 }
 
-document.getElementById('middle-button').addEventListener('click', startStop)
-document.getElementById('top-button').addEventListener('click', startStop)
+document.getElementById('middle-button').addEventListener('click', startStop);
+document.getElementById('top-button').addEventListener('click', startStop);
+
+function showAnswerButtons(){
+  document.getElementById("left-button").classList.add("front");
+  document.getElementById("right-button").classList.add("front");
+  document.getElementById("left-button").classList.remove("back");
+  document.getElementById("right-button").classList.remove("back");
+}
 
 document.getElementById('left-button').addEventListener('click', function() {
   console.info('Same position');
-  lastReply.position = true;
+  lastReply.position = !lastReply.position;
+  const color = lastReply.position ? "var(--lighter-dark-background)" : "";
+  document.getElementById("left-button").querySelector("p").style.backgroundColor = color;
 });
 
 document.getElementById('right-button').addEventListener('click', function() {
   console.info('Same color');
-  lastReply.color = true;
+  lastReply.color = !lastReply.color;
+  const color = lastReply.color ? "var(--lighter-dark-background)" : "";
+  console.log(lastReply.color, color);
+  document.getElementById("right-button").querySelector("p").style.backgroundColor = color;
 });
 
 const coin = () => Math.random() < 0.3; // Kind of coin
@@ -141,64 +156,73 @@ function unrender(step){
 }
 
 function score(toScore={kind: "none", increase: 0}){
-  const score = toScore.increase
-  const color = score > 0 ? "green" : "red"
-  let selector = ""
+  const score = toScore.increase;
+  const color = score > 0 ? "green" : "red";
+  let selector = "";
   if(toScore.kind == "pos"){
-    correctPosC += score
-    selector = "left"
+    correctPosC += score;
+    selector = "left";
   }
   if(toScore.kind == "col"){
-    correctColC += score
-    selector = "right"
+    correctColC += score;
+    selector = "right";
   }
   document.getElementById(`${selector}-button`).querySelector("p").style.backgroundColor = `var(--sd-${color})`;
 }
 
 function checkReply(){
   if(history.length < 1 + BACK){
-    return
+    return;
   }
   total += 1;
-  lastIdx = history.length - 1
-  previousIdx = history.length - 1 - BACK
-  const last = history[lastIdx]
-  const previous = history[previousIdx]
+  lastIdx = history.length - 1;
+  previousIdx = history.length - 1 - BACK;
+  const last = history[lastIdx];
+  const previous = history[previousIdx];
   if(last.position == previous.position){
     if(lastReply.position){
-      score({kind: "pos", increase: 1})
+      score({kind: "pos", increase: 1});
     } else {
-      score({kind: "pos", increase: 0})
+      score({kind: "pos", increase: 0});
     }
   } else {
     if(!lastReply.position){
-      score({kind: "pos", increase: 1})
+      score({kind: "pos", increase: 1});
     } else {
-      score({kind: "pos", increase: 0})
+      score({kind: "pos", increase: 0});
     }
   }
   if(last.color == previous.color){
     if(lastReply.color){
-      score({kind: "col", increase: 1})
+      score({kind: "col", increase: 1});
     } else {
-      score({kind: "col", increase: 0})
+      score({kind: "col", increase: 0});
     }
   } else {
     if(!lastReply.color){
-      score({kind: "col", increase: 1})
+      score({kind: "col", increase: 1});
     } else {
-      score({kind: "col", increase: 0})
+      score({kind: "col", increase: 0});
     }
   }
-  console.info(`pos: ${correctPosC} col: ${correctColC}`)
+  console.info(`pos: ${correctPosC} col: ${correctColC}`);
+}
+
+function resetAnswers(){
+  document.getElementById("right-button").querySelector("p").style.backgroundColor = "rgba(0,0,0,0)";
+  document.getElementById("left-button").querySelector("p").style.backgroundColor = "rgba(0,0,0,0)";
 }
 
 function stepping(){
   let step, prev
   checkReply();
+  if(history.length >= BACK){
+    showAnswerButtons();
+  }
+  setTimeout(resetAnswers, 300);
   if(history.length >= 1){
     prev = history[history.length - 1];
-    unrender(prev)
+    unrender(prev);
     step = generateStep(prev);
   } else {
     step = generateStep();
@@ -223,7 +247,7 @@ function stepping(){
 
   history.push(step);
   setTimeout(() => render(step), 300);
-  resetReply()
+  resetReply();
 }
 
 function updateProgress() {

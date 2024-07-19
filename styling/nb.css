@@ -41,7 +41,6 @@ body {
 
 #circular-progress {
   position: fixed;
-  /*right: 3em;  To avoid overlapping with the right button */ 
   width: 3em;
   height: 3em;
 }
@@ -67,8 +66,8 @@ body {
   grid-template-columns: repeat(3, 1fr); /* 3 equal columns */
   grid-template-rows: repeat(3, 1fr); /* 3 equal rows */
   max-width: 1024px;
-  width: 100%; /* Take full width up to the max */
-  margin: 0 auto; /* Center the matrix horizontally */
+  width: calc(100% - 4em); /* leave guaranteed space for the side buttons */ 
+  margin: 0 auto; 
 }
 
 .inner-square {
@@ -85,13 +84,13 @@ body {
 
 .back {
   display: none;
-  z-index: -1; /* Ensure buttons are on top */
+  z-index: -1; /* Ensure buttons are on back */
 }
 
 #top-button {
   width: 100%;
-  min-height: 2em;
-  font-size: 2em;
+  min-height: 1em;
+  font-size: 1.5em;
   color: var(--sd-light);
   font-family: "Inter";
   text-align: center;
@@ -103,9 +102,16 @@ body {
   position: fixed; /* Position over the content */
   top: 0;
   bottom: 0;
-  width: 33%;  /* Cover 1/3 of the screen width */
   cursor: pointer; /* Indicate clickability */
   font-family: "Inter";
+}
+
+#left-button, #right-button {
+  width: 40%;  /* Make the answers larger */
+}
+
+#middle-button {
+  width: 20%;
 }
 
 #left-button {
@@ -116,16 +122,13 @@ body {
 }
 
 #middle-button {
-  left: 33%;
+  left: 40%;
 }
 
 #left-button > div {
   padding-top: -2em;
   width: 100%;
   text-align: center;
-}
-#left-button > p {
-  border-radius: 0.3em;
 }
 
 #right-button {
@@ -140,9 +143,10 @@ body {
   width: 100%;
   text-align: center;
 }
-#right-button > p {
-  border-radius: 0.3em;
-}
 
+/* For now unused */
+.button-transition {
+  transition: background-color 1s ease-out !important;
+}
 
 
