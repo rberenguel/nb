@@ -51,7 +51,7 @@ Array.from(document.querySelectorAll('.inner-square')).map(e => {
     BACK = +(e.id.replace("d", ""))+1;
     document.getElementById("top-button").textContent = BACK;
     resetEverything();
-    event.stopPropagation();
+    e.stopPropagation();
   })
 });
 
@@ -60,6 +60,7 @@ const modal = document.getElementById("modal");
 modal.addEventListener("click", (e) => {
   document.getElementById("modal").classList.remove("front");
   document.getElementById("modal").classList.add("back");
+  e.stopPropagation();
 });
 
 
@@ -81,7 +82,8 @@ function showResults(){
   modalContent.appendChild(p2);
 }
 
-function startStop() {
+function startStop(e) {
+  e.stopPropagation();
   console.info('Start/stop');
   const squares = Array.from(document.querySelectorAll(".inner-square"));
   if(window.active){
@@ -113,7 +115,7 @@ function startStop() {
 
 document.getElementById('middle-button').addEventListener('click', startStop);
 document.getElementById('top-button').addEventListener('click', startStop);
-document.getElementById('wrapper').addEventListener('click', startStop);
+document.body.addEventListener('click', startStop);
 
 function showAnswerButtons(){
   document.getElementById("left-button").classList.add("front");
@@ -122,19 +124,21 @@ function showAnswerButtons(){
   document.getElementById("right-button").classList.remove("back");
 }
 
-document.getElementById('left-button').addEventListener('click', function() {
+document.getElementById('left-button').addEventListener('click', function(e) {
   console.info('Same position');
   lastReply.position = !lastReply.position;
   const color = lastReply.position ? "var(--lighter-dark-background)" : "";
   document.getElementById("left-button").querySelector("p").style.backgroundColor = color;
+  e.stopPropagation();
 });
 
-document.getElementById('right-button').addEventListener('click', function() {
+document.getElementById('right-button').addEventListener('click', function(e) {
   console.info('Same color');
   lastReply.color = !lastReply.color;
   const color = lastReply.color ? "var(--lighter-dark-background)" : "";
   console.log(lastReply.color, color);
   document.getElementById("right-button").querySelector("p").style.backgroundColor = color;
+  e.stopPropagation();
 });
 
 const coin = () => Math.random() < 0.3; // Kind of coin
