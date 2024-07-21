@@ -9,10 +9,23 @@ let progressInterval;
 let lastReply
 
 const colors = [
-  '--sd-yellow', '--sd-orange', '--sd-magenta',
-  '--sd-violet', '--sd-blue', '--sd-cyan', '--sd-green'
-]; // Removed red, too close to orange/magenta
+  "--blue", 
+  "--orange", 
+  "--lavender", 
+  "--maroon", 
+  "--navy", 
+  "--grey", 
+  "--white",
+]; 
+
 const progressCircle = document.querySelector(".progress-circle");
+
+if(window.location.search == "?colors"){
+  Array.from(document.querySelectorAll(".inner-square")).map((e, i) => {
+    console.log(i)
+    e.style.borderColor = `var(${colors[i]})`;
+  })
+}
 
 function getRandomSolarizedColor() {
   return colors[randomIndex];
@@ -35,9 +48,10 @@ Array.from(document.querySelectorAll('.inner-square')).map(e => {
     if(window.active){
       return;
     }
-    BACK = +(e.id.replace("d", ""))+1
+    BACK = +(e.id.replace("d", ""))+1;
     document.getElementById("top-button").textContent = BACK;
-    resetEverything()  
+    resetEverything();
+    event.stopPropagation();
   })
 });
 
@@ -99,6 +113,7 @@ function startStop() {
 
 document.getElementById('middle-button').addEventListener('click', startStop);
 document.getElementById('top-button').addEventListener('click', startStop);
+document.getElementById('wrapper').addEventListener('click', startStop);
 
 function showAnswerButtons(){
   document.getElementById("left-button").classList.add("front");
