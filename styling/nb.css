@@ -19,8 +19,9 @@
   
 }
 
-body {
+html, body {
   background-color: var(--dark-background);
+  height: 100%;
 }
 
 #wrapper {

@@ -51,7 +51,7 @@ Array.from(document.querySelectorAll('.inner-square')).map(e => {
     BACK = +(e.id.replace("d", ""))+1;
     document.getElementById("top-button").textContent = BACK;
     resetEverything();
-    e.stopPropagation();
+    ev.stopPropagation();
   })
 });
 
