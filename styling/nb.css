@@ -1,27 +1,29 @@
 :root {
-  --dark-background: #001b26;
-  --lighter-dark-background: #204b56;
-  --slighty-lighter-dark-background: #102b36;
+  --dark-background: #1b1b1b;
+  --lighter-dark-background: #1b2b3b;
+  --slighty-lighter-dark-background: #2b3b4b;
   /* I wanted to use solarized colors, but they are not easy to tell mentally.
    * Found this instead, and just tweaked a bit the grey: https://sashamaps.net/docs/resources/20-colors/
    */
   --yellow: #ffe119; 
-  --blue: #4363d8;
+  --blue: #4363f8;
   --orange: #f58231; 
-  --lavender: #dcbeff; 
+  --pink: #fcbeff; 
   --maroon: #800000; 
-  --navy: #000075; 
-  --grey: #898989; 
+  --green: #009055; 
+  --brown: #604530; 
+  --grey: #696969; 
   --white: #ffffff;
   --sd-light: #fdf6e3FF;
   --sd-red: #dc322f;
   --sd-green: #859900;
-  
 }
 
 html, body {
   background-color: var(--dark-background);
   height: 100%;
+  overflow: hidden;
+  touch-action: none;
 }
 
 #wrapper {
@@ -50,10 +52,20 @@ html, body {
   min-height: 30vh; /* At least 30% of viewport height */
 }
 
+#letter {
+  font-family: "Inter";
+  font-size: 3em;
+  text-align: center;
+  position: fixed;
+  width: 1em;
+  height: 1em;
+  line-height: 1em;
+}
+
 #circular-progress {
   position: fixed;
-  width: 3em;
-  height: 3em;
+  width: 6em;
+  height: 6em;
 }
 
 .background-circle {
@@ -82,10 +94,18 @@ html, body {
 }
 
 .inner-square {
-  border-radius: 1em;
+  border-radius: 1.5em;
   margin: 0.5em;
   aspect-ratio: 1/1; /* Maintain square aspect ratio */
-  border: 2em solid;
+  border: 4em solid;
+  transition: border-color 0.5s ease-in-out, background-color 0.5s ease-in-out;
+}
+
+.inner {
+  background-color:  var(--dark-background);
+  border-radius: 1.25em;
+  border: 1em var(--dark-background) solid;
+  aspect-ratio: 1/1;
   transition: border-color 0.5s ease-in-out;
 }
 
@@ -110,7 +130,7 @@ html, body {
   z-index: 100;
 }
 
-#left-button, #middle-button, #right-button {
+#left-button, #middle-button, #bottom-button, #right-button {
   position: fixed; /* Position over the content */
   top: 0;
   bottom: 0;
@@ -119,12 +139,14 @@ html, body {
 }
 
 #left-button, #right-button {
-  width: 40%;  /* Make the answers larger */
+  width: 30%;  /* Make the answers larger */
   background-color: rgba(0,0,0,0);
 }
 
 #middle-button {
-  width: 20%;
+  left: 30%;
+  width: 40%;
+  height: 70%;
   background-color: rgba(0,0,0,0);
 }
 
@@ -133,10 +155,6 @@ html, body {
   color: var(--sd-light);
   writing-mode: vertical-lr;
   text-orientation: upright;
-}
-
-#middle-button {
-  left: 40%;
 }
 
 #left-button > div {
@@ -154,6 +172,21 @@ html, body {
 
 #right-button > div {
   padding-top: -2em;
+  width: 100%;
+  text-align: center;
+}
+
+#bottom-button {
+  color: var(--sd-light);
+  left: 30%;
+  width: 40%;
+  top: calc(100% - 30%);
+  height: 30%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+#bottom-button > div {
   width: 100%;
   text-align: center;
 }
