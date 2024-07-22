@@ -1,6 +1,6 @@
 :root {
   --dark-background: #1b1b1b;
-  --lighter-dark-background: #1b2b3b;
+  --lighter-dark-background: #204b56;
   --slighty-lighter-dark-background: #2b3b4b;
   /* I wanted to use solarized colors, but they are not easy to tell mentally.
    * Found this instead, and just tweaked a bit the grey: https://sashamaps.net/docs/resources/20-colors/
