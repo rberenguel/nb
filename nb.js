@@ -28,7 +28,6 @@ const progressCircle = document.querySelector(".progress-circle");
 
 if(window.location.search == "?colors"){
   Array.from(document.querySelectorAll(".inner-square")).map((e, i) => {
-    console.log(i)
     e.style.borderColor = `var(${colors[i]})`;
     e.style.backgroundColor = `var(${colors[i]})`;
   })
@@ -207,6 +206,9 @@ function generateStep(previous){
   let position = Math.floor(Math.random() * 9);
   let color = Math.floor(Math.random() * colors.length);
   let letter = Math.floor(Math.random() * letters.length);
+  // I use "coin" to try to force each variable to be statistically closer to the
+  // previous one, otherwise it is very easy to get high % just assuming everything
+  // is always different, i.e. not answering at all.
   if(previous){
     if(coin()){
       position = previous.position;
@@ -264,8 +266,8 @@ function checkReply(){
     return;
   }
   total += 1;
-  lastIdx = history.length - 1;
-  previousIdx = history.length - 1 - BACK;
+  const lastIdx = history.length - 1;
+  const previousIdx = history.length - 1 - BACK;
   const last = history[lastIdx];
   const previous = history[previousIdx];
   if(last.position == previous.position){
@@ -331,7 +333,13 @@ function stepping(){
   if(history.length >= 1){
     prev = history[history.length - 1];
     unrender(prev);
-    step = generateStep(prev);
+    if(history.length >= BACK){
+      const previousIdx = history.length - BACK;
+      prev = history[previousIdx];
+      step = generateStep(prev);
+    } else {
+      step = generateStep();
+    }
   } else {
     step = generateStep();
   }
