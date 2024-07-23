@@ -332,6 +332,7 @@ function stepping(){
   const colorCSS = colors[step.color];
   const progressContainer = document.getElementById("circular-progress");
   progressCircle.style.stroke = `var(${colorCSS})`;
+  progressContainer.style.zIndex = 1;
   const svg = progressContainer.querySelector("svg");
   const targetRect = square.getBoundingClientRect();
   const targetCenterX = targetRect.left + targetRect.width / 2;

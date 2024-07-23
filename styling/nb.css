@@ -17,6 +17,7 @@
   --sd-light: #fdf6e3FF;
   --sd-red: #dc322f;
   --sd-green: #859900;
+  font-size: calc(1rem + 0.25vw);
 }
 
 html, body {
@@ -60,23 +61,25 @@ html, body {
   width: 1em;
   height: 1em;
   line-height: 1em;
+  z-index: 2; /* Above circular thing */
 }
 
 #circular-progress {
   position: fixed;
   width: 6em;
   height: 6em;
+  z-index: -1;
 }
 
 .background-circle {
-  fill: none;
-  stroke: var(--sd-dark-background);
+  fill: var(--dark-background);
+  stroke: var(--dark-background);
   stroke-width: 10;
 }
 
 .progress-circle {
   fill: none;
-  stroke: var(--sd-light);
+  stroke: none;
   stroke-width: 10;
   stroke-dasharray: 251; /* Circumference */
   stroke-dashoffset: 251; /* Initially hidden */
@@ -94,10 +97,11 @@ html, body {
 }
 
 .inner-square {
+  background-color: black;
   border-radius: 1.5em;
   margin: 0.5em;
   aspect-ratio: 1/1; /* Maintain square aspect ratio */
-  border: 4em solid;
+  border: 3em solid;
   transition: border-color 0.5s ease-in-out, background-color 0.5s ease-in-out;
 }
 
@@ -146,7 +150,7 @@ html, body {
 #middle-button {
   left: 30%;
   width: 40%;
-  height: 70%;
+  height: 50%;
   background-color: rgba(0,0,0,0);
 }
 
@@ -180,15 +184,20 @@ html, body {
   color: var(--sd-light);
   left: 30%;
   width: 40%;
-  top: calc(100% - 30%);
-  height: 30%;
+  top: 50%;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
 }
 #bottom-button > div {
   width: 100%;
   text-align: center;
+}
+
+#bottom-button > div > p {
+  padding: 1em;
+  border-radius: 0.5em;
+  letter-spacing: 0.15rem;
 }
 
 /* For now unused */
