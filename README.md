@@ -7,7 +7,7 @@ A long time ago I found an app I liked for it, with only positions and letters. 
 position+audio, which I don't like. But that stopped working, so…
 [wrote my own](https://www.youtube.com/watch?v=ubPWaDWcOLU).
 
-I have the feeling the n-back task is useful for focus. Otherwise, it was a neat side
+I have the feeling the `n`-back task is useful for focus. Otherwise, it was a neat side
 project to hack together in a couple afternoons.
 
 ## Usage
@@ -41,4 +41,5 @@ The answer buttons (details below) won't appear until an answer is expected. The
 
 ## Tip(s)
 
-If you want to see all possible colors, visit the page with the URL ending in `?colors`.
+- If you want to see all possible colors, visit the page with the URL ending in `?colors`.
+- You should be able to tweak the CSS to change the colors, backgrounds and that. I made it easier once I found out dark background (which I prefer) is hard on the eyes because the colors have high contrast.

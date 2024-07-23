@@ -11,15 +11,15 @@ let progressInterval;
 let lastReply
 
 const colors = [
-  "--blue", 
-  "--orange", 
-  "--yellow",
-  "--pink", 
-  "--maroon", 
-  "--green", 
-  "--grey", 
-  "--brown", 
-  "--white",
+  "--color1", 
+  "--color2", 
+  "--color3",
+  "--color4", 
+  "--color5", 
+  "--color6", 
+  "--color7", 
+  "--color8", 
+  "--color9",
 ]; 
 
 const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "J"]
@@ -75,8 +75,7 @@ Array.from(document.querySelectorAll('.inner-square')).map(e => {
 const modal = document.getElementById("modal");
 
 modal.addEventListener("click", (e) => {
-  document.getElementById("modal").classList.remove("front");
-  document.getElementById("modal").classList.add("back");
+  toBack("modal")
   e.stopPropagation();
 });
 
@@ -103,14 +102,19 @@ function showResults(){
   const p1 = document.createElement("P");
   const p2 = document.createElement("P");
   const p3 = document.createElement("P");
-  p1.innerHTML = `Positions: <span style="float: right;">${correctPosC} / ${total} (${pcts.pos})</span>`;
-  p2.innerHTML = `Colors: <span style="float: right;"> ${correctColC} / ${total} (${pcts.col})</span>`;
-  p3.innerHTML = `Letters: <span style="float: right;"> ${correctLetC} / ${total} (${pcts.let})</span>`;
+  p1.innerHTML = `Positions: <span style="float: right;">${correctPosC} / ${total} (${pcts.pos}%)</span>`;
+  p2.innerHTML = `Colors: <span style="float: right;"> ${correctColC} / ${total} (${pcts.col}%)</span>`;
+  p3.innerHTML = `Letters: <span style="float: right;"> ${correctLetC} / ${total} (${pcts.let}%)</span>`;
   modalContent.appendChild(p1);
   modalContent.appendChild(p2);
   if(triple){
     modalContent.appendChild(p3);
   }
+}
+
+function toBack(id){
+  document.getElementById(id).classList.add("back");
+  document.getElementById(id).classList.remove("front");
 }
 
 function startStop(e) {
@@ -122,18 +126,13 @@ function startStop(e) {
       document.getElementById("bottom-button").classList.remove("front");
       document.getElementById("bottom-button").classList.add("back");
     }
-    document.getElementById("left-button").classList.add("back");
-    document.getElementById("right-button").classList.add("back");
-    document.getElementById("middle-button").classList.add("back");
-    document.getElementById("left-button").classList.remove("front");
-    document.getElementById("right-button").classList.remove("front");
-    document.getElementById("middle-button").classList.remove("front");
+    ["circular-progress", "left-button", "right-button", "middle-button"].map(toBack)
     clearInterval(window.active);
     window.active = false;
     history = [] // Reset history, so it starts again from the beginning.
     // TODO the button text should not show until we can answer
-    squares.map(e => e.style.borderColor = "var(--slighty-lighter-dark-background)");
-    squares.map(e => e.style.backgroundColor = "var(--slighty-lighter-dark-background)");
+    squares.map(e => e.style.borderColor = "var(--dark)");
+    squares.map(e => e.style.backgroundColor = "var(--dark)");
     document.getElementById("modal").classList.remove("back");
     document.getElementById("modal").classList.add("front");
     showResults();
@@ -151,8 +150,8 @@ function startStop(e) {
     document.getElementById("modal").classList.remove("front");
     stepping();
     window.active = setInterval(stepping, 4000);
-    squares.map(e => e.style.borderColor = "black");
-    squares.map(e => e.style.backgroundColor = "black");
+    squares.map(e => e.style.borderColor = "var(--alternate-background)");
+    squares.map(e => e.style.backgroundColor = "var(--alternate-background)");
   }
 }
 
@@ -171,20 +170,24 @@ function showAnswerButtons(){
   }
 }
 
+function answerButtonCommon(identifier, flag, e){
+  const color = flag ? "var(--dark)" : "";
+  const textColor = flag ? "var(--light)" : "var(--textcolor)";
+  document.getElementById(`${identifier}-button`).querySelector("p").style.backgroundColor = color;
+  document.getElementById(`${identifier}-button`).querySelector("p").style.color = textColor;
+  e.stopPropagation();
+}
+
 document.getElementById('left-button').addEventListener('click', function(e) {
   console.info('Same position');
   lastReply.position = !lastReply.position;
-  const color = lastReply.position ? "var(--lighter-dark-background)" : "";
-  document.getElementById("left-button").querySelector("p").style.backgroundColor = color;
-  e.stopPropagation();
+  answerButtonCommon("left", lastReply.position, e);
 });
 
 document.getElementById('right-button').addEventListener('click', function(e) {
   console.info('Same color');
   lastReply.color = !lastReply.color;
-  const color = lastReply.color ? "var(--lighter-dark-background)" : "";
-  document.getElementById("right-button").querySelector("p").style.backgroundColor = color;
-  e.stopPropagation();
+  answerButtonCommon("right", lastReply.color, e);
 });
 
 document.getElementById('bottom-button').addEventListener('click', function(e) {
@@ -193,9 +196,7 @@ document.getElementById('bottom-button').addEventListener('click', function(e) {
   }
   console.info('Same letter');
   lastReply.letter = !lastReply.letter;
-  const color = lastReply.letter ? "var(--lighter-dark-background)" : "";
-  document.getElementById("bottom-button").querySelector("p").style.backgroundColor = color;
-  e.stopPropagation();
+  answerButtonCommon("bottom", lastReply.letter, e);
 });
 
 
@@ -238,8 +239,8 @@ function render(step){
 function unrender(step){
   const position = step.position;
   const element = document.getElementById(`d${position}`);
-  element.style.borderColor = `black`;
-  element.style.backgroundColor = `black`;
+  element.style.borderColor = `var(--alternate-background)`;
+  element.style.backgroundColor = `var(--alternate-background)`;
 }
 
 function score(toScore={kind: "none", increase: 0}){
@@ -366,7 +367,8 @@ function stepping(){
   const colorCSS = colors[step.color];
   const progressContainer = document.getElementById("circular-progress");
   progressCircle.style.stroke = `var(${colorCSS})`;
-  progressContainer.style.zIndex = 1;
+  progressContainer.classList.add("front");
+  progressContainer.classList.remove("back");
   const svg = progressContainer.querySelector("svg");
   const targetRect = square.getBoundingClientRect();
   const targetCenterX = targetRect.left + targetRect.width / 2;

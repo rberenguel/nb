@@ -1,27 +1,29 @@
 :root {
-  --dark-background: #1b1b1b;
-  --lighter-dark-background: #204b56;
-  --slighty-lighter-dark-background: #2b3b4b;
   /* I wanted to use solarized colors, but they are not easy to tell mentally.
    * Found this instead, and just tweaked a bit the grey: https://sashamaps.net/docs/resources/20-colors/
    */
-  --yellow: #ffe119; 
-  --blue: #4363f8;
-  --orange: #f58231; 
-  --pink: #fcbeff; 
-  --maroon: #800000; 
-  --green: #009055; 
-  --brown: #604530; 
-  --grey: #696969; 
-  --white: #ffffff;
-  --sd-light: #fdf6e3FF;
+  --color1: #ffe119; 
+  --color2: #4363f8;
+  --color3: #f58231; 
+  --color4: #fcbeff; 
+  --color5: #800000; 
+  --color6: #009055; 
+  --color7: #604530; 
+  --color8: #696969; 
+  --color9: #ffffff;
   --sd-red: #dc322f;
   --sd-green: #859900;
+  --dark: #2b3b4b;
+  --light: #ada693;
+  --light-2: #8d8673;
+  --background: var(--light-2);
+  --alternate-background: var(--light);
+  --textcolor: black;
   font-size: calc(1rem + 0.25vw);
 }
 
 html, body {
-  background-color: var(--dark-background);
+  background-color: var(--background);
   height: 100%;
   overflow: hidden;
   touch-action: none;
@@ -42,12 +44,13 @@ html, body {
 }
 
 #modal-content {
+  font-family: "Inter";
   font-size: 2em;
-  color: var(--sd-light);
-  background-color: var(--slighty-lighter-dark-background);
-  margin: 15% auto; 
+  color: var(--textcolor);
+  background-color: var(--background);
+  margin: 30% auto; 
   padding: 20px;
-  border: 1px solid var(--sd-light);
+  border: 2px solid var(--dark);
   border-radius: 0.2em;
   width: 50%; 
   min-height: 30vh; /* At least 30% of viewport height */
@@ -68,12 +71,11 @@ html, body {
   position: fixed;
   width: 6em;
   height: 6em;
-  z-index: -1;
 }
 
 .background-circle {
-  fill: var(--dark-background);
-  stroke: var(--dark-background);
+  fill: var(--background);
+  stroke: var(--background);
   stroke-width: 10;
 }
 
@@ -98,18 +100,19 @@ html, body {
 }
 
 .inner-square {
-  background-color: black;
+  background-color: var(--alternate-background);
   border-radius: 1.5em;
   margin: 0.5em;
   aspect-ratio: 1/1; /* Maintain square aspect ratio */
   border: 3em solid;
+  border-color: var(--alternate-background);
   transition: border-color 0.5s ease-in-out, background-color 0.5s ease-in-out;
 }
 
 .inner {
-  background-color:  var(--dark-background);
+  background-color:  var(--background);
   border-radius: 1.25em;
-  border: 1em var(--dark-background) solid;
+  border: 1em var(--background) solid;
   aspect-ratio: 1/1;
   transition: border-color 0.5s ease-in-out;
 }
@@ -127,7 +130,7 @@ html, body {
   width: 100%;
   min-height: 1em;
   font-size: 4rem;
-  color: var(--sd-light);
+  color: var(--textcolor);
   font-family: "Inter";
   padding-top: 1.0em;
   padding-bottom: 0.5em;
@@ -179,6 +182,7 @@ html, body {
 #left-button, #right-button {
   width: 30%;  /* Make the answers larger */
   background-color: rgba(0,0,0,0);
+  border: 2px solid rgba(0,0,0,0); /* Try to remove the annoying rendering fail in Safari */
 }
 
 #middle-button {
@@ -186,11 +190,12 @@ html, body {
   width: 40%;
   height: 50%;
   background-color: rgba(0,0,0,0);
+  border: 2px solid rgba(0,0,0,0); /* Try to remove the annoying rendering fail in Safari */
 }
 
 #left-button {
   left: 0;
-  color: var(--sd-light);
+  color: var(--textcolor);
   writing-mode: vertical-lr;
   text-orientation: upright;
 }
@@ -203,7 +208,7 @@ html, body {
 
 #right-button {
   right: 0;
-  color: var(--sd-light);
+  color: var(--textcolor);
   writing-mode: vertical-rl;
   text-orientation: upright;
 }
@@ -215,7 +220,7 @@ html, body {
 }
 
 #bottom-button {
-  color: var(--sd-light);
+  color: var(--textcolor);
   left: 30%;
   width: 40%;
   top: 50%;
