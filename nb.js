@@ -342,7 +342,7 @@ function stepping(){
     const pcts = getPcts()
     str = `<td>%</td><td>${pcts.pos}<sup>P</sup></td><td>${pcts.col}<sup>C</sup></td>`
     if(triple){
-      str += ` ${pcts.let}<sup>L</sup>`
+      str += `<td>${pcts.let}<sup>L</sup></td>`
     }
     document.getElementById("top-pct").innerHTML = str;
     str = `${total}`
