@@ -64,7 +64,7 @@ html, body {
   width: 1em;
   height: 1em;
   line-height: 1em;
-  z-index: 2; /* Above circular thing */
+  z-index: 11; /* Just above timer */
 }
 
 #circular-progress {
@@ -123,7 +123,7 @@ html, body {
 
 .back {
   display: none;
-  z-index: -1; /* Ensure buttons are on back */
+  z-index: -1 !important; /* Ensure buttons are on back */
 }
 
 #top-section {

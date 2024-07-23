@@ -116,6 +116,10 @@ function toBack(id){
   document.getElementById(id).classList.add("back");
   document.getElementById(id).classList.remove("front");
 }
+function toFront(id){
+  document.getElementById(id).classList.remove("back");
+  document.getElementById(id).classList.add("front");
+}
 
 function startStop(e) {
   e.stopPropagation();
@@ -123,18 +127,16 @@ function startStop(e) {
   const squares = Array.from(document.querySelectorAll(".inner-square"));
   if(window.active){
     if(triple){
-      document.getElementById("bottom-button").classList.remove("front");
-      document.getElementById("bottom-button").classList.add("back");
+      toBack("bottom-button")
     }
-    ["circular-progress", "left-button", "right-button", "middle-button"].map(toBack)
+    ["circular-progress", "left-button", "right-button", "middle-button", "letter"].map(toBack)
     clearInterval(window.active);
     window.active = false;
     history = [] // Reset history, so it starts again from the beginning.
     // TODO the button text should not show until we can answer
     squares.map(e => e.style.borderColor = "var(--dark)");
     squares.map(e => e.style.backgroundColor = "var(--dark)");
-    document.getElementById("modal").classList.remove("back");
-    document.getElementById("modal").classList.add("front");
+    toFront("modal")
     showResults();
   } else {
     let text = BACK
@@ -144,10 +146,8 @@ function startStop(e) {
       text += `<sub>2</sub>`
     }
     document.getElementById("top-button").innerHTML = text;
-    document.getElementById("middle-button").classList.add("front");
-    document.getElementById("middle-button").classList.remove("back");
-    document.getElementById("modal").classList.add("back");
-    document.getElementById("modal").classList.remove("front");
+    toFront("middle-button")
+    toBack("modal")
     stepping();
     window.active = setInterval(stepping, 4000);
     squares.map(e => e.style.borderColor = "var(--alternate-background)");
@@ -160,13 +160,9 @@ document.getElementById('top-button').addEventListener('click', startStop);
 document.body.addEventListener('click', startStop);
 
 function showAnswerButtons(){
-  document.getElementById("left-button").classList.add("front");
-  document.getElementById("right-button").classList.add("front");
-  document.getElementById("left-button").classList.remove("back");
-  document.getElementById("right-button").classList.remove("back");
+  ["left-button", "right-button"].map(toFront)
   if(triple){
-    document.getElementById("bottom-button").classList.add("front");
-    document.getElementById("bottom-button").classList.remove("back");
+    toFront("bottom-button")
   }
 }
 
@@ -367,8 +363,10 @@ function stepping(){
   const colorCSS = colors[step.color];
   const progressContainer = document.getElementById("circular-progress");
   progressCircle.style.stroke = `var(${colorCSS})`;
-  progressContainer.classList.add("front");
-  progressContainer.classList.remove("back");
+  toFront("circular-progress");
+  if(triple){
+    toFront("letter")
+  }
   const svg = progressContainer.querySelector("svg");
   const targetRect = square.getBoundingClientRect();
   const targetCenterX = targetRect.left + targetRect.width / 2;
