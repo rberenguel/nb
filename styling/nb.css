@@ -81,10 +81,11 @@ html, body {
   fill: none;
   stroke: none;
   stroke-width: 10;
-  stroke-dasharray: 251; /* Circumference */
-  stroke-dashoffset: 251; /* Initially hidden */
+  stroke-dasharray: calc(251); /* Circumference */
+  stroke-dashoffset: calc(251); /* Initially hidden */
   transform-origin: center; /* Rotate from center */
   transition: stroke-dashoffset 0.1s linear; /* Smooth transition */
+  transform: rotate(-90deg);
 }
 
 .matrix {
@@ -122,16 +123,49 @@ html, body {
   z-index: -1; /* Ensure buttons are on back */
 }
 
-#top-button {
+#top-section {
   width: 100%;
   min-height: 1em;
   font-size: 1.5em;
   color: var(--sd-light);
   font-family: "Inter";
-  text-align: center;
   padding-top: 1.0em;
   padding-bottom: 0.5em;
   z-index: 100;
+  display: flex;
+}
+
+#top-button {
+  text-align: center;
+  margin: auto;
+}
+
+#top-button > sub {
+  font-size: 50%;
+}
+
+#top-round {
+  position: fixed;
+  left: 0;
+  margin-left: 4em;
+  font-size: 90%;
+  font-size: 50%;
+  top: 3em;
+}
+
+#top-pct {
+  position: fixed;
+  right: 0;
+  margin-right: 3em;
+  font-size: 50%;
+  top: 2.gem; /* Due to table ? */
+  table-layout: fixed; /* Key property for equal width */
+  width: auto;
+}
+
+#top-pct td {
+  width: 2em;
+  overflow: hidden;
 }
 
 #left-button, #middle-button, #bottom-button, #right-button {

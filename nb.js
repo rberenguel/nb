@@ -63,9 +63,11 @@ Array.from(document.querySelectorAll('.inner-square')).map(e => {
     BACK = new_back;
     let text = BACK
     if(triple){
-      text += ` (triple)`
+      text += `<sub>3</sub>`
+    } else {
+      text += `<sub>2</sub>`
     }
-    document.getElementById("top-button").textContent = text;
+    document.getElementById("top-button").innerHTML = text;
     resetEverything();
     ev.stopPropagation();
   })
@@ -79,6 +81,16 @@ modal.addEventListener("click", (e) => {
   e.stopPropagation();
 });
 
+function getPcts(){
+  const pctPos = 100*correctPosC / total;
+  const pctCol = 100*correctColC / total;
+  const pctLet = 100*correctLetC / total;
+  return {
+    pos: pctPos.toFixed(0),
+    col: pctCol.toFixed(0),
+    let: pctLet.toFixed(0)
+  }
+}
 
 function showResults(){
   if(total==0){
@@ -86,17 +98,15 @@ function showResults(){
     p.textContent = "Not enough rounds to have statistics";
     return;
   }
-  const pctPos = 100*correctPosC / total;
-  const pctCol = 100*correctColC / total;
-  const pctLet = 100*correctLetC / total;
+  const pcts = getPcts()
   const modalContent = modal.querySelector("#modal-content");
   modalContent.innerHTML = "";
   const p1 = document.createElement("P");
   const p2 = document.createElement("P");
   const p3 = document.createElement("P");
-  p1.innerHTML = `Positions: <span style="float: right;">${correctPosC} / ${total} (${pctPos.toFixed(2)})</span>`;
-  p2.innerHTML = `Colors: <span style="float: right;"> ${correctColC} / ${total} (${pctPos.toFixed(2)})</span>`;
-  p3.innerHTML = `Letters: <span style="float: right;"> ${correctLetC} / ${total} (${pctPos.toFixed(2)})</span>`;
+  p1.innerHTML = `Positions: <span style="float: right;">${correctPosC} / ${total} (${pcts.pos})</span>`;
+  p2.innerHTML = `Colors: <span style="float: right;"> ${correctColC} / ${total} (${pcts.col})</span>`;
+  p3.innerHTML = `Letters: <span style="float: right;"> ${correctLetC} / ${total} (${pcts.let})</span>`;
   modalContent.appendChild(p1);
   modalContent.appendChild(p2);
   if(triple){
@@ -131,9 +141,11 @@ function startStop(e) {
   } else {
     let text = BACK
     if(triple){
-      text += ` (triple)`
+      text += `<sub>3</sub>`
+    } else {
+      text += `<sub>2</sub>`
     }
-    document.getElementById("top-button").textContent = text;
+    document.getElementById("top-button").innerHTML = text;
     document.getElementById("middle-button").classList.add("front");
     document.getElementById("middle-button").classList.remove("back");
     document.getElementById("modal").classList.add("back");
@@ -323,6 +335,20 @@ function stepping(){
   } else {
     step = generateStep();
   }
+
+  // Add info
+  if(total > 0){
+    let str;
+    const pcts = getPcts()
+    str = `<td>%</td><td>${pcts.pos}<sup>P</sup></td><td>${pcts.col}<sup>C</sup></td>`
+    if(triple){
+      str += ` ${pcts.let}<sup>L</sup>`
+    }
+    document.getElementById("top-pct").innerHTML = str;
+    str = `${total}`
+    document.getElementById("top-round").innerHTML = str;
+  }
+
   timeRemaining = 4000;
   progressCircle.style.strokeDashoffset = 251;
   clearInterval(progressInterval);
@@ -361,7 +387,7 @@ function updateProgress() {
   timeRemaining -= 100;
 
   const progressPercentage = (timeRemaining / 4000) * 100;
-  const strokeDashoffset = 251 - (251 * progressPercentage) / 100;
+  const strokeDashoffset = 251 + (251 * progressPercentage) / 100;
 
   progressCircle.style.strokeDashoffset = strokeDashoffset;
 
