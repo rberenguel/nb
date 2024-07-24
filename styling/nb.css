@@ -61,8 +61,8 @@ html, body {
   font-size: 3em;
   text-align: center;
   position: fixed;
-  width: 1em;
-  height: 1em;
+  width: round(1em, 1px);
+  height: round(1em, 1px);
   line-height: 1em;
   z-index: 11; /* Just above timer */
   /* This is to prevent a subtle border on iPhone, some compositing issue. The problem does not appear consistently though. */
@@ -163,7 +163,7 @@ html, body {
   right: 0;
   margin-right: 3em;
   font-size: 50%;
-  top: 2.5em; /* Due to table ? */
+  top: round(2.5em, 1px);
   table-layout: fixed; /* Key property for equal width */
   width: auto;
   /* The next two are to prevent a subtle but annoying border on iOS Safari */
@@ -172,7 +172,7 @@ html, body {
 }
 
 #top-pct td {
-  width: 2em;
+  width: round(2em, 1px);
   overflow: hidden;
 }
 
