@@ -71,8 +71,8 @@ html, body {
 
 #circular-progress {
   position: fixed;
-  width: 6em;
-  height: 6em;
+  width: round(6em, 1px);
+  height: round(6em, 1px);
 }
 
 .background-circle {
