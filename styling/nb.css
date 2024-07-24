@@ -65,6 +65,8 @@ html, body {
   height: 1em;
   line-height: 1em;
   z-index: 11; /* Just above timer */
+  /* This is to prevent a subtle border on iPhone, some compositing issue. The problem does not appear consistently though. */
+  background-color: var(--light-2);
 }
 
 #circular-progress {
@@ -161,9 +163,12 @@ html, body {
   right: 0;
   margin-right: 3em;
   font-size: 50%;
-  top: 2.gem; /* Due to table ? */
+  top: 2.5em; /* Due to table ? */
   table-layout: fixed; /* Key property for equal width */
   width: auto;
+  /* The next two are to prevent a subtle but annoying border on iOS Safari */
+  background-color: var(--light-2);
+  border: 3px solid rgba(0, 0, 0, 0);
 }
 
 #top-pct td {
