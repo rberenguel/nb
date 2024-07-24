@@ -373,8 +373,8 @@ function stepping(){
   const targetCenterY = targetRect.top + targetRect.height / 2;
   const containerLeft = targetCenterX - svg.clientWidth / 2;
   const containerTop = targetCenterY - svg.clientHeight / 2;
-  progressContainer.style.left = `${containerLeft}px`;
-  progressContainer.style.top = `${containerTop}px`;
+  progressContainer.style.left = `round(${containerLeft}px, 1px)`;
+  progressContainer.style.top = `round(${containerTop}px, 1px)`;
 
   if(triple){
     const letter = document.getElementById("letter")
@@ -382,8 +382,8 @@ function stepping(){
     const letterBB = letter.getBoundingClientRect();
     const shiftV = letterBB.height/2
     const shiftH = letterBB.width/2
-    letter.style.left = `${containerLeft+shiftH}px`;
-    letter.style.top = `${containerTop+shiftV}px`;
+    letter.style.left = `round(${containerLeft+shiftH}px, 1px)`;
+    letter.style.top = `round(${containerTop+shiftV}px, 1px)`;
     letter.style.color = `var(${colorCSS})`;
   }
   history.push(step);

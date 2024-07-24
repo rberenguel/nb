@@ -161,7 +161,7 @@ html, body {
 #top-pct {
   position: fixed;
   right: 0;
-  margin-right: 3em;
+  margin-right: round(3em, 1px);
   font-size: 50%;
   top: round(2.5em, 1px);
   table-layout: fixed; /* Key property for equal width */
