@@ -74,11 +74,18 @@ body {
     /* main glow */ 0 0 10px var(--score-glow-2),
     /* second glow */ 0 0 15px var(--score-glow-3); /* third glow */
   position: absolute;
-  font-size: 2rem;
-  bottom: 0;
+  font-size: 4rem;
+  bottom: 2em;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 50%;
+}
+
+@media (orientation: landscape) {
+ #score {
+  font-size: 2rem;
+  bottom: 0em;
+ }
 }
 
 #letter {
