@@ -82,10 +82,10 @@ body {
 }
 
 @media (orientation: landscape) {
- #score {
-  font-size: 2rem;
-  bottom: 0px;
- }
+  #score {
+    font-size: 2rem;
+    bottom: 0px;
+  }
 }
 
 #letter {

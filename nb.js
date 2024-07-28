@@ -377,20 +377,17 @@ function checkReply() {
 }
 
 function formatGameScore(number) {
-  const ranges = [
-    { divider: 1e12, suffix: "T" },
-    { divider: 1e9, suffix: "B" },
-    { divider: 1e6, suffix: "M" },
-    { divider: 1e3, suffix: "k" },
-  ];
+  // kilo, Mega, Giga, Tera, Peta, Exa, Zetta, Yotta, Rona, Quetta = 10^30
+  // Please just increase the level if you pass this 🤣
+  const suffixes = ["", "k", "G", "T", "P", "E", "Z", "Y", "R", "Q"];
 
-  for (const range of ranges) {
-    if (number >= range.divider) {
-      return (number / range.divider).toFixed(1) + range.suffix;
-    }
+  let base = 0;
+  while (number >= 1000 && base < suffixes.length - 1) {
+    number /= 1000;
+    base++;
   }
 
-  return number.toString();
+  return `${number.toFixed(1)} ${suffixes[base]}`;
 }
 
 function resetAnswers() {
