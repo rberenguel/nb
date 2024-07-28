@@ -17,7 +17,7 @@ project to hack together in a couple afternoons.
 >
 > I will likely add keyboard shortcuts so it is playable on desktops and using a keyboard on iPad, which are _my_ landscape scenarios.
 
-To change the depth level press any of the squares (assume they are 1-9), the number in the top (the `n`-level) 
+To change the depth level press any of the squares (assume they are 1-9), the number in the top (the `n`-level)
 will change accordingly. Pressing the same square twice switches from dual to triple N-back.
 
 To start, tap the top, where the level appears. To pause while playing, press the middle or top. To dismiss the pause,

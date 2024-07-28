@@ -2,16 +2,20 @@
   /* I wanted to use solarized colors, but they are not easy to tell mentally.
    * Found this instead, and just tweaked a bit the grey: https://sashamaps.net/docs/resources/20-colors/
    */
-  --color1: #ffe119; 
+  --color1: #ffe119;
   --color2: #4363f8;
-  --color3: #f58231; 
-  --color4: #fcbeff; 
-  --color5: #800000; 
-  --color6: #009055; 
-  --color7: #604530; 
-  --color8: #696969; 
+  --color3: #f58231;
+  --color4: #fcbeff;
+  --color5: #800000;
+  --color6: #009055;
+  --color7: #604530;
+  --color8: #696969;
   --color9: #ffffff;
   --sd-red: #dc322f;
+  --score: #800000;
+  --score-glow: #f00000;
+  --score-glow-2: #f06000;
+  --score-glow-3: #f0f000;
   --sd-green: #859900;
   --dark: #2b3b4b;
   --light: #ada693;
@@ -22,7 +26,13 @@
   font-size: calc(1rem + 0.25vw);
 }
 
-html, body {
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
   background-color: var(--background);
   height: 100%;
   overflow: hidden;
@@ -38,9 +48,9 @@ html, body {
   z-index: 1;
   left: 0;
   top: 0;
-  width: 100%; 
-  height: 100%; 
-  overflow: auto; 
+  width: 100%;
+  height: 100%;
+  overflow: auto;
 }
 
 #modal-content {
@@ -48,12 +58,27 @@ html, body {
   font-size: 2em;
   color: var(--textcolor);
   background-color: var(--background);
-  margin: 30% auto; 
+  margin: 30% auto;
   padding: 20px;
   border: 2px solid var(--dark);
   border-radius: 0.2em;
-  width: 50%; 
+  width: 50%;
   min-height: 30vh; /* At least 30% of viewport height */
+}
+
+#score {
+  font-family: "bpdots";
+  color: var(--score);
+  text-shadow:
+    0 0 5px var(--score-glow),
+    /* main glow */ 0 0 10px var(--score-glow-2),
+    /* second glow */ 0 0 15px var(--score-glow-3); /* third glow */
+  position: absolute;
+  font-size: 2rem;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50%;
 }
 
 #letter {
@@ -97,8 +122,8 @@ html, body {
   grid-template-columns: repeat(3, 1fr); /* 3 equal columns */
   grid-template-rows: repeat(3, 1fr); /* 3 equal rows */
   max-width: 1024px;
-  width: calc(100% - 4em); /* leave guaranteed space for the side buttons */ 
-  margin: 0 auto; 
+  width: calc(100% - 4em); /* leave guaranteed space for the side buttons */
+  margin: 0 auto;
 }
 
 .inner-square {
@@ -108,11 +133,13 @@ html, body {
   aspect-ratio: 1/1; /* Maintain square aspect ratio */
   border: 3em solid;
   border-color: var(--alternate-background);
-  transition: border-color 0.5s ease-in-out, background-color 0.5s ease-in-out;
+  transition:
+    border-color 0.5s ease-in-out,
+    background-color 0.5s ease-in-out;
 }
 
 .inner {
-  background-color:  var(--background);
+  background-color: var(--background);
   border-radius: 1.25em;
   border: 1em var(--background) solid;
   aspect-ratio: 1/1;
@@ -134,7 +161,7 @@ html, body {
   font-size: 4rem;
   color: var(--textcolor);
   font-family: "Inter";
-  padding-top: 1.0em;
+  padding-top: 1em;
   padding-bottom: 0.5em;
   z-index: 100;
   display: flex;
@@ -176,7 +203,10 @@ html, body {
   overflow: hidden;
 }
 
-#left-button, #middle-button, #bottom-button, #right-button {
+#left-button,
+#middle-button,
+#bottom-button,
+#right-button {
   position: fixed; /* Position over the content */
   top: 0;
   bottom: 0;
@@ -184,18 +214,19 @@ html, body {
   font-family: "Inter";
 }
 
-#left-button, #right-button {
-  width: 30%;  /* Make the answers larger */
-  background-color: rgba(0,0,0,0);
-  border: 2px solid rgba(0,0,0,0); /* Try to remove the annoying rendering fail in Safari */
+#left-button,
+#right-button {
+  width: 30%; /* Make the answers larger */
+  background-color: rgba(0, 0, 0, 0);
+  border: 2px solid rgba(0, 0, 0, 0); /* Try to remove the annoying rendering fail in Safari */
 }
 
 #middle-button {
   left: 30%;
   width: 40%;
   height: 50%;
-  background-color: rgba(0,0,0,0);
-  border: 2px solid rgba(0,0,0,0); /* Try to remove the annoying rendering fail in Safari */
+  background-color: rgba(0, 0, 0, 0);
+  border: 2px solid rgba(0, 0, 0, 0); /* Try to remove the annoying rendering fail in Safari */
 }
 
 #left-button {
@@ -248,4 +279,3 @@ html, body {
 .button-transition {
   transition: background-color 1s ease-out !important;
 }
-

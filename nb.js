@@ -1,36 +1,40 @@
-let BACK = 1
-let triple = false
-let history = []
-let correctPosC = 0
-let correctColC = 0
-let correctLetC = 0
-let total = 0
-window.active = false
+let BACK = 1;
+let triple = false;
+let history = [];
+let correctPosC = 0;
+let correctColC = 0;
+let correctLetC = 0;
+let total = 0;
+window.active = false;
 let timeRemaining;
 let progressInterval;
-let lastReply
+let lastReply;
+let combo = -1;
+let gameScore = 0;
+
+let stats;
 
 const colors = [
-  "--color1", 
-  "--color2", 
+  "--color1",
+  "--color2",
   "--color3",
-  "--color4", 
-  "--color5", 
-  "--color6", 
-  "--color7", 
-  "--color8", 
+  "--color4",
+  "--color5",
+  "--color6",
+  "--color7",
+  "--color8",
   "--color9",
-]; 
+];
 
-const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "J"]
+const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "J"];
 
 const progressCircle = document.querySelector(".progress-circle");
 
-if(window.location.search == "?colors"){
+if (window.location.search == "?colors") {
   Array.from(document.querySelectorAll(".inner-square")).map((e, i) => {
     e.style.borderColor = `var(${colors[i]})`;
     e.style.backgroundColor = `var(${colors[i]})`;
-  })
+  });
 }
 
 function getRandomSolarizedColor() {
@@ -41,62 +45,71 @@ function resetReply() {
   lastReply = { position: false, color: false, letter: false };
 }
 
-function resetEverything(){
+function resetStats() {
+  stats = {
+    combo: 0,
+  };
+}
+
+function resetEverything() {
   history = [];
   correctPosC = 0;
   correctLetC = 0;
   correctColC = 0;
+  gameScore = 0;
+  combo = -1;
   total = 0;
+  resetStats();
   resetReply();
 }
 
-Array.from(document.querySelectorAll('.inner-square')).map(e => {
-  e.addEventListener('click', ev => {
-    if(window.active){
+Array.from(document.querySelectorAll(".inner-square")).map((e) => {
+  e.addEventListener("click", (ev) => {
+    if (window.active) {
       return;
     }
-    new_back = +(e.id.replace("d", ""))+1;
-    if(BACK == new_back){
+    new_back = +e.id.replace("d", "") + 1;
+    if (BACK == new_back) {
       triple = !triple;
     }
     BACK = new_back;
-    let text = BACK
-    if(triple){
-      text += `<sub>3</sub>`
+    let text = BACK;
+    if (triple) {
+      text += `<sub>3</sub>`;
     } else {
-      text += `<sub>2</sub>`
+      text += `<sub>2</sub>`;
     }
     document.getElementById("top-button").innerHTML = text;
     resetEverything();
     ev.stopPropagation();
-  })
+  });
 });
 
 const modal = document.getElementById("modal");
 
 modal.addEventListener("click", (e) => {
-  toBack("modal")
+  toBack("modal");
   e.stopPropagation();
 });
 
-function getPcts(){
-  const pctPos = 100*correctPosC / total;
-  const pctCol = 100*correctColC / total;
-  const pctLet = 100*correctLetC / total;
+function getPcts() {
+  const pctPos = (100 * correctPosC) / total;
+  const pctCol = (100 * correctColC) / total;
+  const pctLet = (100 * correctLetC) / total;
   return {
     pos: pctPos.toFixed(0),
     col: pctCol.toFixed(0),
-    let: pctLet.toFixed(0)
-  }
+    let: pctLet.toFixed(0),
+  };
 }
 
-function showResults(){
-  if(total==0){
+function showResults() {
+  if (total == 0) {
     const p = document.createElement("P");
     p.textContent = "Not enough rounds to have statistics";
     return;
   }
-  const pcts = getPcts()
+  const pcts = getPcts();
   const modalContent = modal.querySelector("#modal-content");
   modalContent.innerHTML = "";
   const p1 = document.createElement("P");
@@ -107,124 +120,139 @@ function showResults(){
   p3.innerHTML = `Letters: <span style="float: right;"> ${correctLetC} / ${total} (${pcts.let}%)</span>`;
   modalContent.appendChild(p1);
   modalContent.appendChild(p2);
-  if(triple){
+  if (triple) {
     modalContent.appendChild(p3);
   }
+  const p4 = document.createElement("p");
+  p4.innerHTML = `Max combo: ${stats.combo}`;
+  modalContent.appendChild(p4);
 }
 
-function toBack(id){
+function toBack(id) {
   document.getElementById(id).classList.add("back");
   document.getElementById(id).classList.remove("front");
 }
-function toFront(id){
+function toFront(id) {
   document.getElementById(id).classList.remove("back");
   document.getElementById(id).classList.add("front");
 }
 
 function startStop(e) {
   e.stopPropagation();
-  console.info('Start/stop');
+  console.info("Start/stop");
   const squares = Array.from(document.querySelectorAll(".inner-square"));
-  if(window.active){
-    if(triple){
-      toBack("bottom-button")
+  if (window.active) {
+    if (triple) {
+      toBack("bottom-button");
     }
-    ["circular-progress", "left-button", "right-button", "middle-button", "letter"].map(toBack)
+    [
+      "circular-progress",
+      "left-button",
+      "right-button",
+      "middle-button",
+      "letter",
+    ].map(toBack);
     clearInterval(window.active);
     window.active = false;
-    history = [] // Reset history, so it starts again from the beginning.
+    history = []; // Reset history, so it starts again from the beginning.
     // TODO the button text should not show until we can answer
-    squares.map(e => e.style.borderColor = "var(--dark)");
-    squares.map(e => e.style.backgroundColor = "var(--dark)");
-    toFront("modal")
+    squares.map((e) => (e.style.borderColor = "var(--dark)"));
+    squares.map((e) => (e.style.backgroundColor = "var(--dark)"));
+    toFront("modal");
     showResults();
   } else {
-    let text = BACK
-    if(triple){
-      text += `<sub>3</sub>`
+    let text = BACK;
+    if (triple) {
+      text += `<sub>3</sub>`;
     } else {
-      text += `<sub>2</sub>`
+      text += `<sub>2</sub>`;
     }
     document.getElementById("top-button").innerHTML = text;
-    toFront("middle-button")
-    toBack("modal")
+    toFront("middle-button");
+    toBack("modal");
     stepping();
     window.active = setInterval(stepping, 4000);
-    squares.map(e => e.style.borderColor = "var(--alternate-background)");
-    squares.map(e => e.style.backgroundColor = "var(--alternate-background)");
+    squares.map((e) => (e.style.borderColor = "var(--alternate-background)"));
+    squares.map(
+      (e) => (e.style.backgroundColor = "var(--alternate-background)"),
+    );
   }
 }
 
-document.getElementById('middle-button').addEventListener('click', startStop);
-document.getElementById('top-button').addEventListener('click', startStop);
-document.body.addEventListener('click', startStop);
+document.getElementById("middle-button").addEventListener("click", startStop);
+document.getElementById("top-button").addEventListener("click", startStop);
+document.body.addEventListener("click", startStop);
 
-function showAnswerButtons(){
-  ["left-button", "right-button"].map(toFront)
-  if(triple){
-    toFront("bottom-button")
+function showAnswerButtons() {
+  ["left-button", "right-button"].map(toFront);
+  if (triple) {
+    toFront("bottom-button");
   }
 }
 
-function answerButtonCommon(identifier, flag, e){
+function answerButtonCommon(identifier, flag, e) {
   const color = flag ? "var(--dark)" : "";
   const textColor = flag ? "var(--light)" : "var(--textcolor)";
-  document.getElementById(`${identifier}-button`).querySelector("p").style.backgroundColor = color;
-  document.getElementById(`${identifier}-button`).querySelector("p").style.color = textColor;
+  document
+    .getElementById(`${identifier}-button`)
+    .querySelector("p").style.backgroundColor = color;
+  document
+    .getElementById(`${identifier}-button`)
+    .querySelector("p").style.color = textColor;
   e.stopPropagation();
 }
 
-document.getElementById('left-button').addEventListener('click', function(e) {
-  console.info('Same position');
+document.getElementById("left-button").addEventListener("click", function (e) {
+  console.info("Same position");
   lastReply.position = !lastReply.position;
   answerButtonCommon("left", lastReply.position, e);
 });
 
-document.getElementById('right-button').addEventListener('click', function(e) {
-  console.info('Same color');
+document.getElementById("right-button").addEventListener("click", function (e) {
+  console.info("Same color");
   lastReply.color = !lastReply.color;
   answerButtonCommon("right", lastReply.color, e);
 });
 
-document.getElementById('bottom-button').addEventListener('click', function(e) {
-  if(!triple){
-    return;
-  }
-  console.info('Same letter');
-  lastReply.letter = !lastReply.letter;
-  answerButtonCommon("bottom", lastReply.letter, e);
-});
-
+document
+  .getElementById("bottom-button")
+  .addEventListener("click", function (e) {
+    if (!triple) {
+      return;
+    }
+    console.info("Same letter");
+    lastReply.letter = !lastReply.letter;
+    answerButtonCommon("bottom", lastReply.letter, e);
+  });
 
 const coin = () => Math.random() < 0.3; // Kind of coin
 
-
-function generateStep(previous){
+function generateStep(previous) {
   let position = Math.floor(Math.random() * 9);
   let color = Math.floor(Math.random() * colors.length);
   let letter = Math.floor(Math.random() * letters.length);
   // I use "coin" to try to force each variable to be statistically closer to the
   // previous one, otherwise it is very easy to get high % just assuming everything
   // is always different, i.e. not answering at all.
-  if(previous){
-    if(coin()){
+  if (previous) {
+    if (coin()) {
       position = previous.position;
     }
-    if(coin()){
+    if (coin()) {
       color = previous.color;
     }
-    if(coin()){
+    if (coin()) {
       letter = previous.letter;
     }
   }
   return {
     position: position,
     color: color,
-    letter: letter
+    letter: letter,
   };
 }
 
-function render(step){
+function render(step) {
   const colorCSS = colors[step.color];
   const position = step.position;
   const element = document.getElementById(`d${position}`);
@@ -232,34 +260,36 @@ function render(step){
   element.style.backgroundColor = `var(${colorCSS})`;
 }
 
-function unrender(step){
+function unrender(step) {
   const position = step.position;
   const element = document.getElementById(`d${position}`);
   element.style.borderColor = `var(--alternate-background)`;
   element.style.backgroundColor = `var(--alternate-background)`;
 }
 
-function score(toScore={kind: "none", increase: 0}){
+function score(toScore = { kind: "none", increase: 0 }) {
   const score = toScore.increase;
   const color = score > 0 ? "green" : "red";
   let selector = "";
-  if(toScore.kind == "pos"){
+  if (toScore.kind == "pos") {
     correctPosC += score;
     selector = "left";
   }
-  if(toScore.kind == "col"){
+  if (toScore.kind == "col") {
     correctColC += score;
     selector = "right";
   }
-  if(toScore.kind == "let"){
+  if (toScore.kind == "let") {
     correctLetC += score;
     selector = "bottom";
   }
-  document.getElementById(`${selector}-button`).querySelector("p").style.backgroundColor = `var(--sd-${color})`;
+  document
+    .getElementById(`${selector}-button`)
+    .querySelector("p").style.backgroundColor = `var(--sd-${color})`;
 }
 
-function checkReply(){
-  if(history.length < 1 + BACK){
+function checkReply() {
+  if (history.length < 1 + BACK) {
     return;
   }
   total += 1;
@@ -267,70 +297,127 @@ function checkReply(){
   const previousIdx = history.length - 1 - BACK;
   const last = history[lastIdx];
   const previous = history[previousIdx];
-  if(last.position == previous.position){
-    if(lastReply.position){
-      score({kind: "pos", increase: 1});
+  const previousScores = {
+    pos: correctPosC,
+    col: correctColC,
+    let: correctLetC,
+  };
+  if (last.position == previous.position) {
+    if (lastReply.position) {
+      score({ kind: "pos", increase: 1 });
     } else {
-      score({kind: "pos", increase: 0});
+      score({ kind: "pos", increase: 0 });
     }
   } else {
-    if(!lastReply.position){
-      score({kind: "pos", increase: 1});
+    if (!lastReply.position) {
+      score({ kind: "pos", increase: 1 });
     } else {
-      score({kind: "pos", increase: 0});
+      score({ kind: "pos", increase: 0 });
     }
   }
-  if(last.color == previous.color){
-    if(lastReply.color){
-      score({kind: "col", increase: 1});
+  if (last.color == previous.color) {
+    if (lastReply.color) {
+      score({ kind: "col", increase: 1 });
     } else {
-      score({kind: "col", increase: 0});
+      score({ kind: "col", increase: 0 });
     }
   } else {
-    if(!lastReply.color){
-      score({kind: "col", increase: 1});
+    if (!lastReply.color) {
+      score({ kind: "col", increase: 1 });
     } else {
-      score({kind: "col", increase: 0});
+      score({ kind: "col", increase: 0 });
     }
   }
-  if(triple){
-    if(last.letter== previous.letter){
-      if(lastReply.letter){
-        score({kind: "let", increase: 1});
+  if (triple) {
+    if (last.letter == previous.letter) {
+      if (lastReply.letter) {
+        score({ kind: "let", increase: 1 });
       } else {
-        score({kind: "let", increase: 0});
+        score({ kind: "let", increase: 0 });
       }
     } else {
-      if(!lastReply.letter){
-        score({kind: "let", increase: 1});
+      if (!lastReply.letter) {
+        score({ kind: "let", increase: 1 });
       } else {
-        score({kind: "let", increase: 0});
+        score({ kind: "let", increase: 0 });
       }
     }
-
   }
+  // Check combo increase
+  const delta = {
+    pos: previousScores.pos - correctPosC,
+    col: previousScores.col - correctColC,
+    let: previousScores.let - correctLetC,
+  };
+  if (triple) {
+    if (delta.pos != 0 && delta.col != 0 && delta.let != 0) {
+      combo += 1;
+    } else {
+      combo = 0;
+    }
+  } else {
+    if (delta.pos != 0 && delta.col != 0) {
+      combo += 1;
+    } else {
+      combo = -1;
+    }
+  }
+  stats.combo = Math.max(stats.combo, combo);
+  // Score
+  let increase = combo > 0 ? 1 : 0;
+  if (triple) {
+    increase = increase * 3 ** combo;
+  } else {
+    increase = increase * 2 ** combo;
+  }
+  gameScore += increase;
+  document.getElementById("score").innerHTML =
+    `<span style="float: left;">${formatGameScore(gameScore)}</span> <span style="float: right">${combo > 0 ? combo : 1} x</span>`;
   console.info(`pos: ${correctPosC} col: ${correctColC}`);
 }
 
-function resetAnswers(){
-  document.getElementById("right-button").querySelector("p").style.backgroundColor = "rgba(0,0,0,0)";
-  document.getElementById("left-button").querySelector("p").style.backgroundColor = "rgba(0,0,0,0)";
-  if(triple){
-    document.getElementById("bottom-button").querySelector("p").style.backgroundColor = "rgba(0,0,0,0)";
+function formatGameScore(number) {
+  const ranges = [
+    { divider: 1e12, suffix: "T" },
+    { divider: 1e9, suffix: "B" },
+    { divider: 1e6, suffix: "M" },
+    { divider: 1e3, suffix: "k" },
+  ];
+
+  for (const range of ranges) {
+    if (number >= range.divider) {
+      return (number / range.divider).toFixed(1) + range.suffix;
+    }
+  }
+
+  return number.toString();
+}
+
+function resetAnswers() {
+  document
+    .getElementById("right-button")
+    .querySelector("p").style.backgroundColor = "rgba(0,0,0,0)";
+  document
+    .getElementById("left-button")
+    .querySelector("p").style.backgroundColor = "rgba(0,0,0,0)";
+  if (triple) {
+    document
+      .getElementById("bottom-button")
+      .querySelector("p").style.backgroundColor = "rgba(0,0,0,0)";
   }
 }
 
-function stepping(){
-  let step, prev
+function stepping() {
+  let step, prev;
   checkReply();
-  if(history.length >= BACK){
+  if (history.length >= BACK) {
     showAnswerButtons();
   }
   setTimeout(resetAnswers, 300);
-  if(history.length >= 1){
+  if (history.length >= 1) {
     prev = history[history.length - 1];
     unrender(prev);
-    if(history.length >= BACK){
+    if (history.length >= BACK) {
       const previousIdx = history.length - BACK;
       prev = history[previousIdx];
       step = generateStep(prev);
@@ -342,15 +429,15 @@ function stepping(){
   }
 
   // Add info
-  if(total > 0){
+  if (total > 0) {
     let str;
-    const pcts = getPcts()
-    str = `<td>%</td><td>${pcts.pos}<sup>P</sup></td><td>${pcts.col}<sup>C</sup></td>`
-    if(triple){
-      str += `<td>${pcts.let}<sup>L</sup></td>`
+    const pcts = getPcts();
+    str = `<td>%</td><td>${pcts.pos}<sup>P</sup></td><td>${pcts.col}<sup>C</sup></td>`;
+    if (triple) {
+      str += `<td>${pcts.let}<sup>L</sup></td>`;
     }
     document.getElementById("top-pct").innerHTML = str;
-    str = `${total}`
+    str = `${total}`;
     document.getElementById("top-round").innerHTML = str;
   }
 
@@ -364,8 +451,8 @@ function stepping(){
   const progressContainer = document.getElementById("circular-progress");
   progressCircle.style.stroke = `var(${colorCSS})`;
   toFront("circular-progress");
-  if(triple){
-    toFront("letter")
+  if (triple) {
+    toFront("letter");
   }
   const svg = progressContainer.querySelector("svg");
   const targetRect = square.getBoundingClientRect();
@@ -376,14 +463,14 @@ function stepping(){
   progressContainer.style.left = `round(${containerLeft}px, 1px)`;
   progressContainer.style.top = `round(${containerTop}px, 1px)`;
 
-  if(triple){
-    const letter = document.getElementById("letter")
+  if (triple) {
+    const letter = document.getElementById("letter");
     letter.textContent = letters[step.letter];
     const letterBB = letter.getBoundingClientRect();
-    const shiftV = letterBB.height/2
-    const shiftH = letterBB.width/2
-    letter.style.left = `round(${containerLeft+shiftH}px, 1px)`;
-    letter.style.top = `round(${containerTop+shiftV}px, 1px)`;
+    const shiftV = letterBB.height / 2;
+    const shiftH = letterBB.width / 2;
+    letter.style.left = `round(${containerLeft + shiftH}px, 1px)`;
+    letter.style.top = `round(${containerTop + shiftV}px, 1px)`;
     letter.style.color = `var(${colorCSS})`;
   }
   history.push(step);
@@ -405,4 +492,4 @@ function updateProgress() {
 }
 
 resetReply();
-
+resetStats();
