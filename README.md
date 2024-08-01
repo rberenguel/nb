@@ -27,6 +27,8 @@ left area.
 
 The answer buttons (details below) won't appear until an answer is expected. The answer buttons will briefly flash red or green depending on whether you were right or wrong.
 
+I have added auto-level advance, modelled after the one in [Brain Workshop](https://brainworkshop.sourceforge.net/details.html). After 20 rounds (which I call "a cycle" in the code) are played (20 answers, although I might be miscounting somewhere and they could be 21), if the % of correct answers for all categories is >= 80% the n-level is increased, if it's larger than 50% it stays the same and if lower, decreases. Maximum of 9 and minimum of 1, of course. Tapping the modal when the cycle ends starts a new one. If the level has changed, all stats are reset, but if the level is the same stats are kept: it makes it harder to increase the % and keep bouncing up and down the levels.
+
 ### Dual
 
 - You need to remember colors and positions.

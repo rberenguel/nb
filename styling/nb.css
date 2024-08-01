@@ -81,6 +81,10 @@ body {
   width: round(50%, 1px);
 }
 
+#levelling {
+  margin-top: 1em;
+}
+
 @media (orientation: landscape) {
   #score {
     font-size: 2rem;

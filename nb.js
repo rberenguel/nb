@@ -5,14 +5,17 @@ let correctPosC = 0;
 let correctColC = 0;
 let correctLetC = 0;
 let total = 0;
+let cycles = 0; // A cycle is formed of rounds, rounds in a cycle are counted in "total"
 window.active = false;
 let timeRemaining;
 let progressInterval;
 let lastReply;
 let combo = -1;
 let gameScore = 0;
-
+let starting = true; // Hook to prevent stopping just after starting
 let stats;
+
+const CYCLE_LENGTH = 20;
 
 const colors = [
   "--color1",
@@ -90,6 +93,11 @@ const modal = document.getElementById("modal");
 modal.addEventListener("click", (e) => {
   toBack("modal");
   e.stopPropagation();
+  if (modal.starts) {
+    // To make the game more fluid, when level advances after a cycle tapping the modal goes to the next cycle
+    modal.starts = false;
+    startStop();
+  }
 });
 
 function getPcts() {
@@ -103,15 +111,42 @@ function getPcts() {
   };
 }
 
-function showResults() {
-  if (total == 0) {
-    const p = document.createElement("P");
-    p.textContent = "Not enough rounds to have statistics";
-    return;
+const levelling = {
+  kAdvance: "advance",
+  kMaintain: "maintain",
+  kDecrease: "decrease",
+};
+
+function checkPcts() {
+  const pcts = getPcts();
+  if (triple) {
+    if (pcts.pos >= 80 && pcts.col >= 80 && pcts.let >= 80) {
+      return levelling.kAdvance;
+    }
+    if (pcts.pos >= 50 && pcts.col >= 50 && pcts.let >= 50) {
+      return levelling.kMaintain;
+    }
+  } else {
+    if (pcts.pos >= 80 && pcts.col >= 80) {
+      return levelling.kAdvance;
+    }
+    if (pcts.pos >= 50 && pcts.col >= 50) {
+      return levelling.kMaintain;
+    }
   }
+  return levelling.kDecrease;
+}
+
+function showResults() {
   const pcts = getPcts();
   const modalContent = modal.querySelector("#modal-content");
   modalContent.innerHTML = "";
+  if (total == 0) {
+    const p = document.createElement("P");
+    p.textContent = "Not enough rounds to have statistics";
+    modalContent.appendChild(p);
+    return;
+  }
   const p1 = document.createElement("P");
   const p2 = document.createElement("P");
   const p3 = document.createElement("P");
@@ -126,6 +161,41 @@ function showResults() {
   const p4 = document.createElement("p");
   p4.innerHTML = `Max combo: ${stats.combo}`;
   modalContent.appendChild(p4);
+
+  if (total % CYCLE_LENGTH == 0) {
+    modal.starts = true;
+    const div = document.createElement("div");
+    div.id = "levelling";
+    const decision = checkPcts();
+    cycles += 1;
+    // There is no way to get to pause _and_ has this zero other than ending a round
+    if (decision == levelling.kAdvance) {
+      console.log("Advancing level");
+      div.textContent = "You are advancing a level!";
+      clearInfo();
+      const nextLevel = Math.min(BACK + 1, 9);
+      if (nextLevel != BACK) {
+        // To prevent going from double to triple
+        document.getElementById(`d${nextLevel - 1}`).click(); // Squares start at 0
+      }
+    }
+    if (decision == levelling.kMaintain) {
+      console.log("Staying at this level");
+      // Info and statistics stay: you need to raise the % in the long term, not the short term.
+      div.textContent = "You are staying at this level";
+    }
+    if (decision == levelling.kDecrease) {
+      console.log("Decreasing level");
+      div.textContent = "You are going back a  level";
+      clearInfo();
+      const nextLevel = Math.max(BACK - 1, 1);
+      if (nextLevel != BACK) {
+        // To prevent going from double to triple
+        document.getElementById(`d${nextLevel - 1}`).click(); // Squares start at 0
+      }
+    }
+    modalContent.appendChild(div);
+  }
 }
 
 function toBack(id) {
@@ -138,7 +208,10 @@ function toFront(id) {
 }
 
 function startStop(e) {
-  e.stopPropagation();
+  if (e) {
+    e.stopPropagation();
+  }
+  starting = true;
   console.info("Start/stop");
   const squares = Array.from(document.querySelectorAll(".inner-square"));
   if (window.active) {
@@ -188,6 +261,9 @@ function showAnswerButtons() {
   if (triple) {
     toFront("bottom-button");
   }
+  ["left-button", "right-button", "bottom-button"].map((b) => {
+    document.getElementById(b).style.textColor = "var(--textcolor)"; // Something somewhere is not resetting properly
+  });
 }
 
 function answerButtonCommon(identifier, flag, e) {
@@ -288,11 +364,42 @@ function score(toScore = { kind: "none", increase: 0 }) {
     .querySelector("p").style.backgroundColor = `var(--sd-${color})`;
 }
 
+function addInfo() {
+  if (total > 0) {
+    let str;
+    const pcts = getPcts();
+    str = `<td>%</td><td>${pcts.pos}<sup>P</sup></td><td>${pcts.col}<sup>C</sup></td>`;
+    if (triple) {
+      str += `<td>${pcts.let}<sup>L</sup></td>`;
+    }
+    document.getElementById("top-pct").innerHTML = str;
+    str = `${total} (${cycles})`;
+    document.getElementById("top-round").innerHTML = str;
+  }
+}
+
+function clearInfo() {
+  document.getElementById("top-pct").innerHTML = "";
+  document.getElementById("top-round").innerHTML = "";
+}
+
 function checkReply() {
   if (history.length < 1 + BACK) {
     return;
   }
+
+  console.log(total % CYCLE_LENGTH);
+
+  if (total % CYCLE_LENGTH == 0 && !starting) {
+    // TODO still needs a kickstart
+    addInfo();
+    startStop();
+    return true; // Should not continue
+  }
+  // This goes here to avoid miscounting %
   total += 1;
+
+  starting = false;
   const lastIdx = history.length - 1;
   const previousIdx = history.length - 1 - BACK;
   const last = history[lastIdx];
@@ -372,7 +479,9 @@ function checkReply() {
   }
   gameScore += increase;
   document.getElementById("score").innerHTML =
-    `<span style="float: left;">${formatGameScore(gameScore)}</span> <span style="float: right">${combo > 0 ? combo : 1} x</span>`;
+    `<span style="float: left;">${formatGameScore(
+      gameScore,
+    )}</span> <span style="float: right">${combo > 0 ? combo : 1} x</span>`;
   console.info(`pos: ${correctPosC} col: ${correctColC}`);
 }
 
@@ -406,7 +515,10 @@ function resetAnswers() {
 
 function stepping() {
   let step, prev;
-  checkReply();
+  const stopping = checkReply();
+  if (stopping) {
+    return;
+  }
   if (history.length >= BACK) {
     showAnswerButtons();
   }
@@ -424,20 +536,9 @@ function stepping() {
   } else {
     step = generateStep();
   }
-
-  // Add info
   if (total > 0) {
-    let str;
-    const pcts = getPcts();
-    str = `<td>%</td><td>${pcts.pos}<sup>P</sup></td><td>${pcts.col}<sup>C</sup></td>`;
-    if (triple) {
-      str += `<td>${pcts.let}<sup>L</sup></td>`;
-    }
-    document.getElementById("top-pct").innerHTML = str;
-    str = `${total}`;
-    document.getElementById("top-round").innerHTML = str;
+    addInfo();
   }
-
   timeRemaining = 4000;
   progressCircle.style.strokeDashoffset = 251;
   clearInterval(progressInterval);

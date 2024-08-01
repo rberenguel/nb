@@ -1,8 +1,8 @@
 {
   "short_name": "NB",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "name": "NB",
-  "description": "Colored n-back",
+  "description": "Visual-only dual and triple n-back task",
   "icons": [
     {
       "src": "./icon.png",
