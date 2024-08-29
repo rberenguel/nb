@@ -16,7 +16,7 @@ let starting = true; // Hook to prevent stopping just after starting
 let stats;
 
 const CYCLE_LENGTH = 20;
-const TOTAL_TIME = 3500;
+const TOTAL_TIME = 3000;
 const RESET_TIME = 300;
 
 const colors = [
@@ -217,6 +217,7 @@ function startStop(e) {
   console.info("Start/stop");
   const squares = Array.from(document.querySelectorAll(".inner-square"));
   if (window.active) {
+    // If it's running, we are going to stop showing the modal.
     if (triple) {
       toBack("bottom-button");
     }
@@ -390,16 +391,8 @@ function checkReply() {
     return;
   }
 
-  console.log(total % CYCLE_LENGTH);
-
-  if (total % CYCLE_LENGTH == 0 && !starting) {
-    // TODO still needs a kickstart
-    addInfo();
-    startStop();
-    return true; // Should not continue
-  }
-  // This goes here to avoid miscounting %
   total += 1;
+  console.log(total, CYCLE_LENGTH);
 
   starting = false;
   const lastIdx = history.length - 1;
@@ -485,6 +478,13 @@ function checkReply() {
       gameScore,
     )}</span> <span style="float: right">${combo > 0 ? combo : 1} x</span>`;
   console.info(`pos: ${correctPosC} col: ${correctColC}`);
+  if (total % CYCLE_LENGTH == 0 && !starting) {
+    // TODO still needs a kickstart
+    console.log("Stopping now")
+    addInfo();
+    startStop();
+    return true; // Should not continue
+  }
 }
 
 function formatGameScore(number) {
@@ -519,7 +519,8 @@ function stepping() {
   let step, prev;
   const stopping = checkReply();
   if (stopping) {
-    return;
+    clearInterval(progressInterval);
+    return true;
   }
   if (history.length >= BACK) {
     showAnswerButtons();
