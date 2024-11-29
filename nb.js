@@ -16,8 +16,14 @@ let starting = true; // Hook to prevent stopping just after starting
 let stats;
 
 const CYCLE_LENGTH = 20;
-const TOTAL_TIME = 3000;
-const RESET_TIME = 300;
+const TOTAL_TIME = () => {
+  if (triple) {
+    return 5000;
+  } else {
+    return 3000;
+  }
+};
+const RESET_TIME = () => 300;
 
 const colors = [
   "--color1",
@@ -247,7 +253,7 @@ function startStop(e) {
     toFront("middle-button");
     toBack("modal");
     stepping();
-    window.active = setInterval(stepping, TOTAL_TIME);
+    window.active = setInterval(stepping, TOTAL_TIME());
     squares.map((e) => (e.style.borderColor = "var(--alternate-background)"));
     squares.map(
       (e) => (e.style.backgroundColor = "var(--alternate-background)"),
@@ -480,7 +486,7 @@ function checkReply() {
   console.info(`pos: ${correctPosC} col: ${correctColC}`);
   if (total % CYCLE_LENGTH == 0 && !starting) {
     // TODO still needs a kickstart
-    console.log("Stopping now")
+    console.log("Stopping now");
     addInfo();
     startStop();
     return true; // Should not continue
@@ -525,7 +531,7 @@ function stepping() {
   if (history.length >= BACK) {
     showAnswerButtons();
   }
-  setTimeout(resetAnswers, RESET_TIME);
+  setTimeout(resetAnswers, RESET_TIME());
   if (history.length >= 1) {
     prev = history[history.length - 1];
     unrender(prev);
@@ -542,7 +548,7 @@ function stepping() {
   if (total > 0) {
     addInfo();
   }
-  timeRemaining = TOTAL_TIME - RESET_TIME;
+  timeRemaining = TOTAL_TIME() - RESET_TIME();
   progressCircle.style.strokeDashoffset = 251;
   clearInterval(progressInterval);
   progressInterval = setInterval(updateProgress, 100);
@@ -575,14 +581,14 @@ function stepping() {
     letter.style.color = `var(${colorCSS})`;
   }
   history.push(step);
-  setTimeout(() => render(step), RESET_TIME);
+  setTimeout(() => render(step), RESET_TIME());
   resetReply();
 }
 
 function updateProgress() {
   timeRemaining -= 100;
 
-  const progressPercentage = (timeRemaining / TOTAL_TIME) * 100;
+  const progressPercentage = (timeRemaining / TOTAL_TIME()) * 100;
   const strokeDashoffset = 251 + (251 * progressPercentage) / 100;
 
   progressCircle.style.strokeDashoffset = strokeDashoffset;
