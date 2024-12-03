@@ -77,8 +77,9 @@ body {
   font-size: round(4rem, 1px);
   bottom: round(2em, 1px);
   left: round(50%, 1px);
-  transform: translate(-50%, -50%);
+  transform: translate(round(-50%, 1px), round(-50%, 1px));
   width: round(50%, 1px);
+  height: 0;
 }
 
 #levelling {
@@ -227,15 +228,15 @@ body {
 
 #left-button,
 #right-button {
-  width: 30%; /* Make the answers larger */
+  width: round(30%, 1px); /* Make the answers larger */
   background-color: rgba(0, 0, 0, 0);
   border: 2px solid rgba(0, 0, 0, 0); /* Try to remove the annoying rendering fail in Safari */
 }
 
 #middle-button {
-  left: 30%;
-  width: 40%;
-  height: 50%;
+  left: round(30%, 1px);
+  width: round(40%, 1px);
+  height: round(50%, 1px);
   background-color: rgba(0, 0, 0, 0);
   border: 2px solid rgba(0, 0, 0, 0); /* Try to remove the annoying rendering fail in Safari */
 }
@@ -268,8 +269,8 @@ body {
 
 #bottom-button {
   color: var(--textcolor);
-  left: 30%;
-  width: round(40%, 2px);
+  left: round(30%, 1px);
+  width: round(40%, 1px);
   top: 50%;
   display: flex;
   align-items: center;
