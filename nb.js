@@ -1,3 +1,4 @@
+const SHOW_GAME_SCORE = false;
 let BACK = 1;
 let triple = false;
 let history = [];
@@ -266,24 +267,28 @@ document.getElementById("top-button").addEventListener("click", startStop);
 document.body.addEventListener("click", startStop);
 
 function showAnswerButtons() {
-  ["left-button", "right-button"].map(toFront);
-  if (triple) {
-    toFront("bottom-button");
-  }
-  ["left-button", "right-button", "bottom-button"].map((b) => {
-    document.getElementById(b).style.textColor = "var(--textcolor)"; // Something somewhere is not resetting properly
+  requestAnimationFrame(() => {
+    ["left-button", "right-button"].map(toFront);
+    if (triple) {
+      toFront("bottom-button");
+    }
+    ["left-button", "right-button", "bottom-button"].map((b) => {
+      document.getElementById(b).style.textColor = "var(--textcolor)"; // Something somewhere is not resetting properly
+    });
   });
 }
 
 function answerButtonCommon(identifier, flag, e) {
   const color = flag ? "var(--dark)" : "";
   const textColor = flag ? "var(--light)" : "var(--textcolor)";
-  document
-    .getElementById(`${identifier}-button`)
-    .querySelector("p").style.backgroundColor = color;
-  document
-    .getElementById(`${identifier}-button`)
-    .querySelector("p").style.color = textColor;
+  requestAnimationFrame(() => {
+    document
+      .getElementById(`${identifier}-button`)
+      .querySelector("p").style.backgroundColor = color;
+    document
+      .getElementById(`${identifier}-button`)
+      .querySelector("p").style.color = textColor;
+  });
   e.stopPropagation();
 }
 
@@ -341,15 +346,19 @@ function render(step) {
   const colorCSS = colors[step.color];
   const position = step.position;
   const element = document.getElementById(`d${position}`);
-  element.style.borderColor = `var(${colorCSS})`;
-  element.style.backgroundColor = `var(${colorCSS})`;
+  requestAnimationFrame(() => {
+    element.style.borderColor = `var(${colorCSS})`;
+    element.style.backgroundColor = `var(${colorCSS})`;
+  });
 }
 
 function unrender(step) {
   const position = step.position;
   const element = document.getElementById(`d${position}`);
-  element.style.borderColor = `var(--alternate-background)`;
-  element.style.backgroundColor = `var(--alternate-background)`;
+  requestAnimationFrame(() => {
+    element.style.borderColor = `var(--alternate-background)`;
+    element.style.backgroundColor = `var(--alternate-background)`;
+  });
 }
 
 function score(toScore = { kind: "none", increase: 0 }) {
@@ -368,9 +377,11 @@ function score(toScore = { kind: "none", increase: 0 }) {
     correctLetC += score;
     selector = "bottom";
   }
-  document
-    .getElementById(`${selector}-button`)
-    .querySelector("p").style.backgroundColor = `var(--sd-${color})`;
+  requestAnimationFrame(() => {
+    document
+      .getElementById(`${selector}-button`)
+      .querySelector("p").style.backgroundColor = `var(--sd-${color})`;
+  });
 }
 
 function addInfo() {
@@ -388,8 +399,10 @@ function addInfo() {
 }
 
 function clearInfo() {
-  document.getElementById("top-pct").innerHTML = "";
-  document.getElementById("top-round").innerHTML = "";
+  requestAnimationFrame(() => {
+    document.getElementById("top-pct").innerHTML = "";
+    document.getElementById("top-round").innerHTML = "";
+  });
 }
 
 function checkReply() {
@@ -479,10 +492,12 @@ function checkReply() {
     increase = increase * 2 ** combo;
   }
   gameScore += increase;
-  document.getElementById("score").innerHTML =
-    `<span style="float: left;">${formatGameScore(
-      gameScore,
-    )}</span> <span style="float: right">${combo > 0 ? combo : 1} x</span>`;
+  if (SHOW_GAME_SCORE) {
+    document.getElementById("score").innerHTML =
+      `<span style="float: left;">${formatGameScore(
+        gameScore,
+      )}</span> <span style="float: right">${combo > 0 ? combo : 1} x</span>`;
+  }
   console.info(`pos: ${correctPosC} col: ${correctColC}`);
   if (total % CYCLE_LENGTH == 0 && !starting) {
     // TODO still needs a kickstart
@@ -508,17 +523,19 @@ function formatGameScore(number) {
 }
 
 function resetAnswers() {
-  document
-    .getElementById("right-button")
-    .querySelector("p").style.backgroundColor = "rgba(0,0,0,0)";
-  document
-    .getElementById("left-button")
-    .querySelector("p").style.backgroundColor = "rgba(0,0,0,0)";
-  if (triple) {
+  requestAnimationFrame(() => {
     document
-      .getElementById("bottom-button")
+      .getElementById("right-button")
       .querySelector("p").style.backgroundColor = "rgba(0,0,0,0)";
-  }
+    document
+      .getElementById("left-button")
+      .querySelector("p").style.backgroundColor = "rgba(0,0,0,0)";
+    if (triple) {
+      document
+        .getElementById("bottom-button")
+        .querySelector("p").style.backgroundColor = "rgba(0,0,0,0)";
+    }
+  });
 }
 
 function stepping() {

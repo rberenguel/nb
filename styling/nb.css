@@ -29,6 +29,9 @@
 * {
   margin: 0;
   padding: 0;
+  box-shadow: none;
+  border: none;
+  background-color: transparent;
 }
 
 html,
@@ -74,11 +77,11 @@ body {
     /* main glow */ 0 0 10px var(--score-glow-2),
     /* second glow */ 0 0 15px var(--score-glow-3); /* third glow */
   position: absolute;
-  font-size: round(4rem, 1px);
-  bottom: round(2em, 1px);
-  left: round(50%, 1px);
-  transform: translate(round(-50%, 1px), round(-50%, 1px));
-  width: round(50%, 1px);
+  font-size: round(nearest, 4rem, 2px);
+  bottom: round(nearest, 2em, 2px);
+  left: round(nearest, 50%, 2px);
+  transform: translate(round(nearest, -50%, 2px), round(nearest, -50%, 2px));
+  width: round(nearest, 50%, 2px);
   height: 0;
 }
 
@@ -98,18 +101,19 @@ body {
   font-size: 3em;
   text-align: center;
   position: fixed;
-  width: round(1em, 1px);
-  height: round(1em, 1px);
-  line-height: 1em;
+  width: round(nearest, 1em, 2px);
+  height: round(nearest, 1em, 2px);
+  line-height: round(nearest, 1em, 2px);
   z-index: 11; /* Just above timer */
   /* This is to prevent a subtle border on iPhone, some compositing issue. The problem does not appear consistently though. */
   background-color: var(--light-2);
+  border: none;
 }
 
 #circular-progress {
   position: fixed;
-  width: round(6em, 1px);
-  height: round(6em, 1px);
+  width: round(nearest, 6em, 2px);
+  height: round(nearest, 6em, 2px);
 }
 
 .background-circle {
@@ -143,7 +147,7 @@ body {
   border-radius: 1.5em;
   margin: 0.5em;
   aspect-ratio: 1/1; /* Maintain square aspect ratio */
-  border: 3em solid;
+  border: round(nearest, 3em, 2px) solid;
   border-color: var(--alternate-background);
   transition:
     border-color 0.5s ease-in-out,
@@ -152,7 +156,7 @@ body {
 
 .inner {
   background-color: var(--background);
-  border-radius: 1.25em;
+  border-radius: round(nearest, 1.25em, 2px);
   border: 1em var(--background) solid;
   aspect-ratio: 1/1;
   transition: border-color 0.5s ease-in-out;
@@ -160,10 +164,12 @@ body {
 
 .front {
   z-index: 10; /* Ensure buttons are on top */
+  opacity: 1;
 }
 
 .back {
   display: none;
+  opacity: 0; /* Having this opacity is still not fixing the ghosting, but seems to help a lot */
   z-index: -1 !important; /* Ensure buttons are on back */
 }
 
@@ -200,18 +206,19 @@ body {
 #top-pct {
   position: fixed;
   right: 0;
-  margin-right: round(3em, 1px);
+  margin-right: round(nearest, 3em, 2px);
   font-size: 50%;
-  top: round(2.5em, 1px);
+  top: round(nearest, 2.5em, 2px);
   table-layout: fixed; /* Key property for equal width */
   width: auto;
   /* The next two are to prevent a subtle but annoying border on iOS Safari */
   background-color: var(--light-2);
-  border: 3px solid rgba(0, 0, 0, 0);
+  border: none;
+  /*border: 1px solid rgba(0, 0, 0, 0);*/
 }
 
 #top-pct td {
-  width: round(2em, 1px);
+  width: round(nearest, 2em, 2px);
   overflow: hidden;
 }
 
@@ -228,17 +235,19 @@ body {
 
 #left-button,
 #right-button {
-  width: round(30%, 1px); /* Make the answers larger */
-  background-color: rgba(0, 0, 0, 0);
-  border: 2px solid rgba(0, 0, 0, 0); /* Try to remove the annoying rendering fail in Safari */
+  width: round(nearest, 30%, 2px); /* Make the answers larger */
+  border: none;
 }
 
 #middle-button {
-  left: round(30%, 1px);
-  width: round(40%, 1px);
-  height: round(50%, 1px);
+  left: round(nearest, 30%, 2px);
+  width: round(nearest, 40%, 2px);
+  height: round(nearest, 50%, 2px);
+}
+
+.transparent-b {
   background-color: rgba(0, 0, 0, 0);
-  border: 2px solid rgba(0, 0, 0, 0); /* Try to remove the annoying rendering fail in Safari */
+  border: none;
 }
 
 #left-button {
@@ -269,9 +278,9 @@ body {
 
 #bottom-button {
   color: var(--textcolor);
-  left: round(30%, 1px);
-  width: round(40%, 1px);
-  top: 50%;
+  left: round(nearest, 30%, 2px);
+  width: round(nearest, 40%, 2px);
+  top: round(nearest, 50%, 2px);
   display: flex;
   align-items: center;
   justify-content: center;
