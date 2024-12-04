@@ -197,24 +197,24 @@ body {
 #top-round {
   position: fixed;
   left: 0;
-  margin-left: 4em;
-  font-size: 90%;
+  margin-left: 3.5em;
   font-size: 50%;
-  top: 3em;
+  height: round(nearest, 1.1em, 2px);
+  top: round(nearest, 2.8em, 2px);
 }
 
 #top-pct {
   position: fixed;
   right: 0;
-  margin-right: round(nearest, 3em, 2px);
+  margin-right: round(nearest, 1em, 2px);
   font-size: 50%;
   top: round(nearest, 2.5em, 2px);
-  table-layout: fixed; /* Key property for equal width */
-  width: auto;
+  table-layout: fixed;
+  width: round(nearest, 10em, 2px);
+  height: round(nearest, 1em, 2px);
   /* The next two are to prevent a subtle but annoying border on iOS Safari */
   background-color: var(--light-2);
   border: none;
-  /*border: 1px solid rgba(0, 0, 0, 0);*/
 }
 
 #top-pct td {

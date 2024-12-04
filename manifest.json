@@ -1,6 +1,6 @@
 {
   "short_name": "NB",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "name": "NB",
   "description": "Visual-only dual and triple n-back task",
   "icons": [
