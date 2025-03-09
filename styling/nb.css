@@ -139,10 +139,9 @@ body {
   grid-template-rows: repeat(3, 1fr); /* 3 equal rows */
   max-width: 1024px;
   width: round(calc(100% - 4em), 1px); /* leave guaranteed space for the side buttons */
-  margin: 0 auto;
   position: fixed; /* Something has broken in this positioning */
-  left: 50%;
-  transform: translate(-50%, 0%);
+  left: round(50%, 1px);
+  transform: translate(round(calc(-50% - 1em), 1px), 0%);
 }
 
 .inner-square {
