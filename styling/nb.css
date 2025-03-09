@@ -138,8 +138,11 @@ body {
   grid-template-columns: repeat(3, 1fr); /* 3 equal columns */
   grid-template-rows: repeat(3, 1fr); /* 3 equal rows */
   max-width: 1024px;
-  width: calc(100% - 4em); /* leave guaranteed space for the side buttons */
+  width: round(calc(100% - 4em), 1px); /* leave guaranteed space for the side buttons */
   margin: 0 auto;
+  position: fixed; /* Something has broken in this positioning */
+  left: 50%;
+  transform: translate(-50%, 0%);
 }
 
 .inner-square {
