@@ -1,0 +1,459 @@
+:root {
+  /* Colors */
+  --color1: #ffe119;
+  --color2: #4363f8;
+  --color3: #f58231;
+  --color4: #fcbeff;
+  --color5: #800000;
+  --color6: #009055;
+  --color7: #604530;
+  --color8: #696969;
+  --color9: #ffffff;
+
+  --sd-red: #dc322f;
+  --sd-green: #859900;
+  --dark: #2b3b4b;
+  --light: #ada693;
+  --light-2: #8d8673;
+  --background: var(--light-2);
+  --alternate-background: var(--light);
+  --text-color: black;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--background);
+  font-family: "Inter", sans-serif;
+  touch-action: none;
+  user-select: none;
+}
+
+/* Utility classes */
+.hidden {
+  display: none !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Main game container */
+#game-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Top bar with level and stats */
+#top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 1rem;
+  font-size: 2rem;
+  color: var(--text-color);
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+#level-display {
+  font-size: 3rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+}
+
+#level-display sub {
+  font-size: 50%;
+}
+
+#round-display,
+#stats-display {
+  font-size: 1.5rem;
+  min-width: 6rem;
+}
+
+#stats-display {
+  text-align: right;
+}
+
+/* Grid container - centers the grid */
+#grid-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin-top: -2rem;
+  position: relative;
+}
+
+/* 3x3 grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 0.5rem;
+  max-width: min(82vw, 70vh);
+  max-height: min(82vw, 70vh);
+  aspect-ratio: 1;
+  width: 100%;
+}
+
+/* Individual squares */
+.square {
+  background-color: var(--alternate-background);
+  border-radius: 1rem;
+  cursor: pointer;
+  position: relative;
+  padding: 3rem;
+}
+
+.square:active {
+  transform: scale(0.95);
+}
+
+/* Timer border using pseudo-element */
+.square.active::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  background-color: var(--active-color);
+  animation: timer-countdown var(--timer-duration) linear forwards;
+  z-index: 0;
+}
+
+@keyframes timer-countdown {
+  from {
+    inset: 0;
+  }
+  to {
+    inset: 3rem;
+  }
+}
+
+.square-inner {
+  width: 100%;
+  height: 100%;
+  background-color: var(--alternate-background);
+  border-radius: 0.75rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: var(--text-color);
+  font-weight: 600;
+  z-index: 1;
+}
+
+.square.active .square-inner {
+  background-color: transparent;
+}
+
+/* Letter circle container */
+.letter-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background-color: rgba(141, 134, 115, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--active-color);
+  z-index: 10;
+  box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.2);
+}
+
+/* Active square styling */
+.square.active .square-inner {
+  background-color: var(--active-color);
+  transition: background-color 0.3s ease;
+}
+
+/* Side buttons */
+.side-button {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 25%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0);
+  cursor: pointer;
+  z-index: 50;
+  transition: background-color 0.2s ease;
+}
+
+.side-button:active {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Feedback bar - full height vertical slice at screen edge */
+.side-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2rem;
+  background-color: transparent;
+  z-index: -1;
+  transition: background-color 0.3s ease;
+}
+
+#button-left::before {
+  left: 0;
+}
+
+#button-right::before {
+  right: 0;
+}
+
+.side-button.pressed::before {
+  background-color: var(--dark);
+}
+
+.side-button.correct::before {
+  background-color: var(--sd-green);
+}
+
+.side-button.incorrect::before {
+  background-color: var(--sd-red);
+}
+
+.side-button.pressed span {
+  color: var(--light);
+  opacity: 1;
+}
+
+.side-button.correct span,
+.side-button.incorrect span {
+  color: white;
+  opacity: 1;
+}
+
+#button-left {
+  left: 0;
+  writing-mode: vertical-lr;
+  text-orientation: upright;
+}
+
+#button-left span {
+  position: absolute;
+  left: 0.25rem;
+}
+
+#button-right {
+  right: 0;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+}
+
+#button-right span {
+  position: absolute;
+  right: 0.25rem;
+}
+
+.side-button span {
+  font-size: 0.9rem;
+  color: var(--text-color);
+  letter-spacing: 0.15rem;
+  opacity: 0;
+  font-weight: 300;
+  padding: 0.5rem 0.25rem;
+  transition: opacity 0.3s ease;
+}
+
+/* Bottom button */
+.bottom-button {
+  position: fixed;
+  bottom: 0;
+  left: 25%;
+  right: 25%;
+  height: 15%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0);
+  cursor: pointer;
+  z-index: 50;
+  transition: background-color 0.2s ease;
+}
+
+.bottom-button:active {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Feedback bar - horizontal slice at bottom */
+.bottom-button::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2.5rem;
+  background-color: transparent;
+  z-index: -1;
+  transition: background-color 0.3s ease;
+}
+
+.bottom-button.pressed::before {
+  background-color: var(--dark);
+}
+
+.bottom-button.correct::before {
+  background-color: var(--sd-green);
+}
+
+.bottom-button.incorrect::before {
+  background-color: var(--sd-red);
+}
+
+.bottom-button.pressed span {
+  color: var(--light);
+  opacity: 1;
+}
+
+.bottom-button.correct span,
+.bottom-button.incorrect span {
+  color: white;
+  opacity: 1;
+}
+
+.bottom-button span {
+  font-size: 1.2rem;
+  color: var(--text-color);
+  letter-spacing: 0.2rem;
+  opacity: 0;
+  font-weight: 300;
+  padding: 0.5rem 1rem;
+  transition: opacity 0.3s ease;
+}
+
+/* Pause button (middle area) */
+.pause-button {
+  position: fixed;
+  top: 0;
+  left: 25%;
+  right: 25%;
+  bottom: 15%;
+  cursor: pointer;
+  z-index: 40;
+}
+
+/* Modal */
+#modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+#modal-content {
+  background-color: var(--background);
+  padding: 2rem;
+  border-radius: 0.5rem;
+  border: 2px solid var(--dark);
+  max-width: 90%;
+  max-height: 80%;
+  overflow-y: auto;
+  font-size: 1.5rem;
+  color: var(--text-color);
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+  #modal-content {
+    max-width: 600px;
+  }
+
+  .side-button span,
+  .bottom-button span {
+    font-size: 1.2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Desktop: narrower side buttons */
+  .side-button {
+    width: 20%;
+  }
+
+  .bottom-button {
+    left: 20%;
+    right: 20%;
+  }
+
+  .pause-button {
+    left: 20%;
+    right: 20%;
+  }
+
+  .grid {
+    max-width: min(70vw, 65vh);
+    max-height: min(70vw, 65vh);
+  }
+
+  .square {
+    padding: 3.5rem;
+  }
+
+  @keyframes timer-countdown {
+    from {
+      inset: 0;
+    }
+    to {
+      inset: 3.5rem;
+    }
+  }
+
+  /* Hover states for desktop */
+  .side-button:hover,
+  .bottom-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  .square:hover {
+    transform: scale(1.02);
+  }
+}
+
+/* Landscape mode adjustments */
+@media (orientation: landscape) and (max-height: 600px) {
+  #top-bar {
+    padding: 0.5rem 1rem;
+    font-size: 1.5rem;
+  }
+
+  #level-display {
+    font-size: 2rem;
+  }
+
+  .grid {
+    max-width: min(60vw, 70vh);
+    max-height: min(60vw, 70vh);
+  }
+}
