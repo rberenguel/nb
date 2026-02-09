@@ -16,6 +16,8 @@ let starting = true;
 let paused = false;
 let nextRoundTimeout = null;
 let renderTimeout = null;
+let warmupRounds = 0;
+let lastRoundWasWarmup = true; // Track if previous round was warmup
 
 const CYCLE_LENGTH = 20;
 const TOTAL_TIME = () => (triple ? 5000 : 3000);
@@ -62,6 +64,7 @@ function resetEverything() {
   correctColC = 0;
   combo = -1;
   total = 0;
+  lastRoundWasWarmup = true;
   resetReply();
 }
 
@@ -142,6 +145,17 @@ function togglePause() {
       }
     });
 
+    // Clear button states (pressed, correct, incorrect)
+    buttonLeft.classList.remove("pressed", "correct", "incorrect");
+    buttonRight.classList.remove("pressed", "correct", "incorrect");
+    buttonBottom.classList.remove("pressed", "correct", "incorrect");
+
+    // Hide button text during pause
+    updateButtonVisibility(false);
+
+    // Reset reply state
+    resetReply();
+
     // Show pause indicator
     levelDisplay.textContent = "⏸";
     levelDisplay.style.opacity = "0.5";
@@ -153,6 +167,10 @@ function togglePause() {
     // Restore level display
     updateLevelDisplay();
     levelDisplay.style.opacity = "1";
+
+    // Start warmup period - need BACK rounds before accepting answers
+    warmupRounds = BACK;
+    lastRoundWasWarmup = true; // Treat as if coming from warmup
 
     // Continue with next round
     nextRound();
@@ -202,10 +220,8 @@ buttonPause.addEventListener("click", () => {
   togglePause();
 });
 
-// Update button text visibility based on history length
-function updateButtonVisibility() {
-  const canAnswer = history.length > BACK;
-
+// Update button text visibility based on history length and warmup state
+function updateButtonVisibility(canAnswer) {
   const leftSpan = buttonLeft.querySelector('span');
   const rightSpan = buttonRight.querySelector('span');
   const bottomSpan = buttonBottom.querySelector('span');
@@ -284,9 +300,17 @@ function nextRound() {
     unrender(prev);
   }
 
-  // Check answers from previous round (if we have enough history)
-  if (history.length > BACK) {
+  // Capture warmup state for THIS round BEFORE any changes
+  const isWarmup = warmupRounds > 0;
+
+  // Check answers from previous round (only if PREVIOUS round was answerable)
+  if (!lastRoundWasWarmup && history.length > BACK) {
     checkAnswers();
+  }
+
+  // Decrement warmup counter AFTER checking
+  if (warmupRounds > 0) {
+    warmupRounds--;
   }
 
   // Check if we should move to next cycle or end
@@ -310,14 +334,24 @@ function nextRound() {
 
   history.push(step);
 
-  // Update button visibility
-  updateButtonVisibility();
+  // Determine if user can answer THIS round (based on pre-decrement warmup state)
+  const canAnswer = !isWarmup && history.length > BACK;
 
-  // Update round display
-  roundDisplay.textContent = `${history.length}`;
+  // Update button visibility
+  updateButtonVisibility(canAnswer);
+
+  // Update round display (only count answerable rounds, not warmup/initial rounds)
+  if (canAnswer) {
+    roundDisplay.textContent = `${total + 1}`;
+  } else {
+    roundDisplay.textContent = "—";
+  }
 
   // Reset reply state for this round
   resetReply();
+
+  // Remember warmup state for next round
+  lastRoundWasWarmup = isWarmup;
 
   // Render after reset time
   renderTimeout = setTimeout(() => {
@@ -336,7 +370,7 @@ function nextRound() {
 
 // Answer handlers - toggle button state
 function toggleButton(button, type) {
-  if (!active || history.length <= BACK) return;
+  if (!active || history.length <= BACK || warmupRounds > 0) return;
 
   lastReply[type] = !lastReply[type];
 
@@ -365,6 +399,7 @@ buttonBottom.addEventListener("click", (e) => {
 // Check answers at end of round and provide feedback
 function checkAnswers() {
   if (history.length < 1 + BACK) return;
+  if (warmupRounds > 0) return; // Safety: never check during warmup
 
   total++;
 
