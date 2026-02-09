@@ -230,7 +230,8 @@ function endGame() {
 }
 
 // Pause button
-buttonPause.addEventListener("click", () => {
+buttonPause.addEventListener("mousedown", (e) => {
+  e.preventDefault();
   togglePause();
 });
 
@@ -403,17 +404,20 @@ function toggleButton(button, type) {
   }
 }
 
-buttonLeft.addEventListener("click", (e) => {
+buttonLeft.addEventListener("mousedown", (e) => {
+  e.preventDefault();
   e.stopPropagation();
   toggleButton(buttonLeft, "position");
 });
 
-buttonRight.addEventListener("click", (e) => {
+buttonRight.addEventListener("mousedown", (e) => {
+  e.preventDefault();
   e.stopPropagation();
   toggleButton(buttonRight, "color");
 });
 
-buttonBottom.addEventListener("click", (e) => {
+buttonBottom.addEventListener("mousedown", (e) => {
+  e.preventDefault();
   e.stopPropagation();
   toggleButton(buttonBottom, "letter");
 });
