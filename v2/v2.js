@@ -1,3 +1,6 @@
+// Import haptic feedback
+import { haptic } from "./haptic.js";
+
 // Game state
 let BACK = 1;
 let triple = false;
@@ -41,13 +44,14 @@ const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "J"];
 // DOM elements
 const levelDisplay = document.getElementById("level-display");
 const roundDisplay = document.getElementById("round-display");
-const statsDisplay = document.getElementById("stats-display");
 const modal = document.getElementById("modal");
 const modalContent = document.getElementById("modal-content");
 const buttonLeft = document.getElementById("button-left");
 const buttonRight = document.getElementById("button-right");
 const buttonBottom = document.getElementById("button-bottom");
 const buttonPause = document.getElementById("button-pause");
+const brainFill = document.querySelector(".brain-fill");
+const progressText = document.querySelector(".progress-text");
 
 // Initialize squares
 const squares = Array.from(document.querySelectorAll(".square"));
@@ -66,6 +70,7 @@ function resetEverything() {
   total = 0;
   lastRoundWasWarmup = true;
   resetReply();
+  updateBrainProgress(); // Reset brain to 0
 }
 
 // Square click handlers (for level selection)
@@ -129,6 +134,9 @@ function togglePause() {
     paused = true;
     active = false;
 
+    // Light haptic on pause
+    haptic(50);
+
     // Clear all timers
     clearInterval(progressInterval);
     if (nextRoundTimeout) clearTimeout(nextRoundTimeout);
@@ -164,6 +172,9 @@ function togglePause() {
     paused = false;
     active = true;
 
+    // Medium haptic on resume
+    haptic(100);
+
     // Restore level display
     updateLevelDisplay();
     levelDisplay.style.opacity = "1";
@@ -181,6 +192,9 @@ function togglePause() {
 function endGame() {
   paused = false;
   active = false;
+
+  // Strong haptic on game end
+  haptic(150);
 
   // Clear all timers
   clearInterval(progressInterval);
@@ -372,6 +386,9 @@ function nextRound() {
 function toggleButton(button, type) {
   if (!active || history.length <= BACK || warmupRounds > 0) return;
 
+  // Light haptic feedback on button press
+  haptic(50);
+
   lastReply[type] = !lastReply[type];
 
   if (lastReply[type]) {
@@ -421,11 +438,24 @@ function checkAnswers() {
   flashButton(buttonRight, colCorrect);
 
   // Check letter (if triple mode)
+  let letCorrect = true; // Default true for dual mode
   if (triple) {
     const letMatch = current.letter === prev.letter;
-    const letCorrect = (letMatch && lastReply.letter) || (!letMatch && !lastReply.letter);
+    letCorrect = (letMatch && lastReply.letter) || (!letMatch && !lastReply.letter);
     if (letCorrect) correctLetC++;
     flashButton(buttonBottom, letCorrect);
+  }
+
+  // Perfect round celebration
+  const isPerfect = posCorrect && colCorrect && letCorrect;
+  if (isPerfect) {
+    setTimeout(() => {
+      haptic(200); // Celebration haptic
+      // Brain pop animation
+      const brainIcon = document.querySelector('.brain-container');
+      brainIcon.classList.add('pop');
+      setTimeout(() => brainIcon.classList.remove('pop'), 600);
+    }, 600); // After feedback flashes
   }
 
   // Update stats after flash
@@ -438,21 +468,51 @@ function flashButton(button, correct) {
   button.classList.remove("pressed");
   button.classList.add(correct ? "correct" : "incorrect");
 
+  // Haptic feedback: medium for correct, strong for incorrect
+  haptic(correct ? 100 : 150);
+
   setTimeout(() => {
     button.classList.remove("correct", "incorrect");
   }, 500);
 }
 
 function updateStatsDisplay() {
-  if (total === 0) return;
+  updateBrainProgress();
+}
 
-  if (triple) {
-    const avg = Math.round(((correctPosC + correctColC + correctLetC) / (total * 3)) * 100);
-    statsDisplay.textContent = `${avg}%`;
+function updateBrainProgress() {
+  const maxRounds = CYCLE_LENGTH * 6; // 120 total rounds
+  const progress = Math.min(total / maxRounds, 1); // 0 to 1
+  const percentage = Math.round(progress * 100);
+
+  // Update fill amount (clip-path from bottom)
+  const fillInset = 100 - percentage;
+  brainFill.style.setProperty('--fill-inset', `${fillInset}%`);
+
+  // Update progress text
+  progressText.textContent = `${total}/${maxRounds}`;
+
+  // Color progression based on progress - vibrant fire gradients
+  let gradient;
+
+  if (progress < 0.2) {
+    // 0-20%: Red to orange
+    gradient = 'linear-gradient(to top, #8b0000, #dc143c, #ff4500, #ffa500)';
+  } else if (progress < 0.4) {
+    // 20-40%: Orange to yellow
+    gradient = 'linear-gradient(to top, #ff4500, #ff8c00, #ffa500, #ffd700)';
+  } else if (progress < 0.6) {
+    // 40-60%: Yellow to bright orange
+    gradient = 'linear-gradient(to top, #ffd700, #ffaa00, #ff8800, #ff6600)';
+  } else if (progress < 0.8) {
+    // 60-80%: Hot fire - red to yellow
+    gradient = 'linear-gradient(to top, #ff0000, #ff4400, #ff8800, #ffcc00)';
   } else {
-    const avg = Math.round(((correctPosC + correctColC) / (total * 2)) * 100);
-    statsDisplay.textContent = `${avg}%`;
+    // 80-100%: White-hot fire
+    gradient = 'linear-gradient(to top, #ff0000, #ff6600, #ffaa00, #ffee00, #ffffff)';
   }
+
+  brainFill.style.background = gradient;
 }
 
 // Show results modal

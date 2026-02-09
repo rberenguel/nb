@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="v2.css" />
     <link rel="stylesheet" href="../styling/inter.css" />
     <link rel="stylesheet" href="../styling/bpdots.css" />
+    <link rel="stylesheet" href="../fonts/phosphor/phosphor.css" />
   </head>
   <body>
     <!-- Game container -->
@@ -17,7 +18,13 @@
       <div id="top-bar">
         <div id="round-display"></div>
         <div id="level-display">1<sub>2</sub></div>
-        <div id="stats-display"></div>
+        <div id="brain-progress">
+          <div class="brain-container">
+            <div class="brain-base">&#xe74e;</div>
+            <div class="brain-fill">&#xe74e;</div>
+          </div>
+          <div class="progress-text">0/120</div>
+        </div>
       </div>
 
       <!-- Main grid area -->
@@ -71,6 +78,6 @@
       <div id="modal-content"></div>
     </div>
 
-    <script src="v2.js"></script>
+    <script type="module" src="v2.js"></script>
   </body>
 </html>
