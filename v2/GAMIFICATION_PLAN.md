@@ -1,6 +1,7 @@
 # Dual N-Back Gamification Plan
 
 ## Overview
+
 Transform the dual n-back game into an engaging, rewarding experience with score tracking, haptic feedback, visual celebrations, and progress visualization.
 
 ---
@@ -8,9 +9,11 @@ Transform the dual n-back game into an engaging, rewarding experience with score
 ## Phase 1: Foundation - Score Tracking & Haptics
 
 ### Task 1.1: Score Tracking System ⬜
+
 **Goal:** Implement localStorage-based high score tracking
 
 **Implementation:**
+
 - [x] Define score calculation formula
   - Points = correct answers × level multiplier
   - 1-back: 1pt, 2-back: 2pt, 3-back: 3pt, etc.
@@ -28,15 +31,18 @@ Transform the dual n-back game into an engaging, rewarding experience with score
 **Code Reference:** `/Users/ruben/code/apoquerar/script.js` (lines 632-655)
 
 **Files to create/modify:**
+
 - `v2/scoring.js` (new module)
 - `v2/v2.js` (import and integrate)
 
 ---
 
 ### Task 1.2: Haptic Feedback System ⬜
+
 **Goal:** Add tactile feedback for user interactions
 
 **Implementation:**
+
 - [ ] Copy haptic module
   - Source: `/Users/ruben/code/apoquerar/haptic.js`
   - Destination: `v2/haptic.js`
@@ -52,6 +58,7 @@ Transform the dual n-back game into an engaging, rewarding experience with score
 **Code Reference:** `/Users/ruben/code/apoquerar/haptic.js` (complete module)
 
 **Files to create/modify:**
+
 - `v2/haptic.js` (copy from apoquerar)
 - `v2/v2.js` (add haptic() calls)
 - `v2/v2.html` (convert to ES6 module: `<script type="module" src="v2.js">`)
@@ -61,9 +68,11 @@ Transform the dual n-back game into an engaging, rewarding experience with score
 ## Phase 2: Visual Progress - Brain Indicator
 
 ### Task 2.1: Brain Icon Integration ⬜
+
 **Goal:** Add animated brain icon showing game progress
 
 **Implementation:**
+
 - [ ] Get Phosphor brain icon
   - Source: https://phosphoricons.com (brain icon)
   - Format: SVG inline in HTML
@@ -76,6 +85,7 @@ Transform the dual n-back game into an engaging, rewarding experience with score
   - `--fill-percentage: calc(total / 120 * 100%)`
 
 **Color progression:**
+
 - 0-20%: `#696969` (grey) → `#8d8673` (light grey)
 - 20-40%: `#8d8673` → `#4363f8` (blue)
 - 40-60%: `#4363f8` → `#fcbeff` (pink)
@@ -83,6 +93,7 @@ Transform the dual n-back game into an engaging, rewarding experience with score
 - 80-100%: `#ffe119` → Rainbow gradient
 
 **Files to modify:**
+
 - `v2/v2.html` (add brain SVG + container)
 - `v2/v2.css` (brain styles + animations)
 - `v2/v2.js` (update brain fill on each round)
@@ -90,9 +101,11 @@ Transform the dual n-back game into an engaging, rewarding experience with score
 ---
 
 ### Task 2.2: Score Display with "Sixtyfour" Font ⬜
+
 **Goal:** Add eye-catching score display with animated gradient
 
 **Implementation:**
+
 - [ ] Copy font file
   - Source: `/Users/ruben/code/suc/SixtyFour.woff2`
   - Destination: `v2/fonts/SixtyFour.woff2`
@@ -110,6 +123,7 @@ Transform the dual n-back game into an engaging, rewarding experience with score
 **Code Reference:** `/Users/ruben/code/suc/blocker.js` (lines 10-59)
 
 **Files to modify:**
+
 - `v2/fonts/SixtyFour.woff2` (copy)
 - `v2/v2.css` (font + score styles)
 - `v2/v2.html` (score display element)
@@ -120,9 +134,11 @@ Transform the dual n-back game into an engaging, rewarding experience with score
 ## Phase 3: Visual Celebrations - Effects System
 
 ### Task 3.1: Canvas Particle System ⬜
+
 **Goal:** Create reusable particle animation engine
 
 **Implementation:**
+
 - [ ] Create effects module
   - `v2/effects.js`
   - Canvas setup (fullscreen overlay, pointer-events: none)
@@ -134,19 +150,23 @@ Transform the dual n-back game into an engaging, rewarding experience with score
   - **Confetti:** Random shapes, rotation, slower decay
 
 **Code Reference:**
+
 - `/Users/ruben/code/suc/content_script.js` (lines 86-246)
 - Firework config: friction 0.98, no gravity, color schemes
 - Explosion config: gravity 0.075, speed multiplier, decay rates
 
 **Files to create:**
+
 - `v2/effects.js` (new particle system module)
 
 ---
 
 ### Task 3.2: Celebration Triggers ⬜
+
 **Goal:** Trigger visual effects at key moments
 
 **Implementation:**
+
 - [ ] Perfect round (all answers correct)
   - Small firework burst at brain icon
   - Brain icon "pop" scale animation
@@ -166,6 +186,7 @@ Transform the dual n-back game into an engaging, rewarding experience with score
   - Triple haptic celebration
 
 **Files to modify:**
+
 - `v2/v2.js` (import effects, add trigger logic in checkAnswers + endGame)
 
 ---
@@ -173,9 +194,11 @@ Transform the dual n-back game into an engaging, rewarding experience with score
 ## Phase 4: High Scores Display & Polish
 
 ### Task 4.1: High Scores Modal Section ⬜
+
 **Goal:** Display top 5 scores in game over modal
 
 **Implementation:**
+
 - [ ] Add high scores section to modal
   - List of top 5 scores
   - Highlight new record with animation
@@ -190,6 +213,7 @@ Transform the dual n-back game into an engaging, rewarding experience with score
 **Code Reference:** `/Users/ruben/code/apoquerar/script.js` (lines 641-655)
 
 **Files to modify:**
+
 - `v2/v2.js` (displayHighScores function in showResults)
 - `v2/v2.css` (high score list styles)
 - `v2/v2.html` (high scores container in modal)
@@ -197,9 +221,11 @@ Transform the dual n-back game into an engaging, rewarding experience with score
 ---
 
 ### Task 4.2: Progress Milestones ⬜
+
 **Goal:** Show achievement-like milestones
 
 **Implementation:**
+
 - [ ] Define milestone list
   - "First Steps" - Complete 10 rounds
   - "Getting Focused" - Complete 40 rounds
@@ -216,6 +242,7 @@ Transform the dual n-back game into an engaging, rewarding experience with score
 - [ ] Display in modal if achieved during game
 
 **Files to modify:**
+
 - `v2/v2.js` (milestone tracking + notifications)
 - `v2/v2.css` (toast notification styles)
 - `v2/scoring.js` (milestone storage)
@@ -225,9 +252,11 @@ Transform the dual n-back game into an engaging, rewarding experience with score
 ## Phase 5: Additional Polish
 
 ### Task 5.1: Pause Screen Enhancement ⬜
+
 **Goal:** Make pause screen more informative
 
 **Implementation:**
+
 - [ ] Show current session stats during pause
   - Current score
   - Rounds completed
@@ -237,15 +266,18 @@ Transform the dual n-back game into an engaging, rewarding experience with score
 - [ ] Blur background slightly
 
 **Files to modify:**
+
 - `v2/v2.js` (pause screen content)
 - `v2/v2.css` (pause overlay styles)
 
 ---
 
 ### Task 5.2: Sound Effects (Optional) ⬜
+
 **Goal:** Add subtle audio feedback
 
 **Implementation:**
+
 - [ ] Create/find sound files
   - Button press: soft click
   - Correct: pleasant chime
@@ -262,17 +294,20 @@ Transform the dual n-back game into an engaging, rewarding experience with score
 ## Technical Considerations
 
 ### Module System Migration
+
 Current: `<script src="v2.js"></script>`
 Required: `<script type="module" src="v2.js"></script>`
 
 **Why:** To support `import` statements for haptics and effects
 
 **Changes needed:**
+
 - Update `v2/v2.html` script tag
 - Convert v2.js to use exports if needed
 - Ensure all modules use ES6 syntax
 
 ### Performance
+
 - Canvas animations only when particles exist
 - Remove particles when alpha <= 0
 - Limit max simultaneous particles (200)
@@ -280,6 +315,7 @@ Required: `<script type="module" src="v2.js"></script>`
 - Scale particle count on mobile (reduce by 50%)
 
 ### Storage Limits
+
 - localStorage max: 5-10MB
 - High scores: ~1KB for 5 entries
 - Milestones: ~500 bytes
@@ -306,28 +342,17 @@ v2/
 ## Implementation Order
 
 **Week 1: Foundation**
+
 1. ✅ Copy haptic.js
 2. ✅ Add haptic triggers
 3. ✅ Implement score tracking
 4. ✅ Test localStorage persistence
 
-**Week 2: Visual Progress**
-5. ✅ Add brain icon + gradient fill
-6. ✅ Copy Sixtyfour font
-7. ✅ Create score display with gradient
-8. ✅ Test brain animation on progress
+**Week 2: Visual Progress** 5. ✅ Add brain icon + gradient fill 6. ✅ Copy Sixtyfour font 7. ✅ Create score display with gradient 8. ✅ Test brain animation on progress
 
-**Week 3: Celebrations**
-9. ✅ Build particle system
-10. ✅ Implement firework effects
-11. ✅ Add celebration triggers
-12. ✅ Test performance
+**Week 3: Celebrations** 9. ✅ Build particle system 10. ✅ Implement firework effects 11. ✅ Add celebration triggers 12. ✅ Test performance
 
-**Week 4: Polish**
-13. ✅ Add high scores modal
-14. ✅ Implement milestones
-15. ✅ Enhance pause screen
-16. ✅ Final testing + tweaks
+**Week 4: Polish** 13. ✅ Add high scores modal 14. ✅ Implement milestones 15. ✅ Enhance pause screen 16. ✅ Final testing + tweaks
 
 ---
 
@@ -347,11 +372,13 @@ v2/
 ## Resources
 
 **Code References:**
+
 - Apoquerar: `/Users/ruben/code/apoquerar/`
 - Suc: `/Users/ruben/code/suc/`
 - Current n-back: `/Users/ruben/code/nb/v2/`
 
 **External:**
+
 - Phosphor Icons: https://phosphoricons.com
 - Sixtyfour Font: From suc project
 - Game Feel Theory: "Juice It or Lose It" talk

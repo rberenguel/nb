@@ -143,7 +143,7 @@ function togglePause() {
     if (renderTimeout) clearTimeout(renderTimeout);
 
     // Clear current animation
-    squares.forEach(sq => {
+    squares.forEach((sq) => {
       sq.classList.remove("active");
       sq.style.removeProperty("--active-color");
       sq.style.removeProperty("--timer-duration");
@@ -211,7 +211,7 @@ function endGame() {
   buttonPause.classList.add("hidden");
 
   // Clear active states
-  squares.forEach(sq => {
+  squares.forEach((sq) => {
     sq.classList.remove("active");
     sq.style.removeProperty("--active-color");
     sq.style.removeProperty("--timer-duration");
@@ -236,9 +236,9 @@ buttonPause.addEventListener("click", () => {
 
 // Update button text visibility based on history length and warmup state
 function updateButtonVisibility(canAnswer) {
-  const leftSpan = buttonLeft.querySelector('span');
-  const rightSpan = buttonRight.querySelector('span');
-  const bottomSpan = buttonBottom.querySelector('span');
+  const leftSpan = buttonLeft.querySelector("span");
+  const rightSpan = buttonRight.querySelector("span");
+  const bottomSpan = buttonBottom.querySelector("span");
 
   if (leftSpan) leftSpan.style.opacity = canAnswer ? "1" : "0";
   if (rightSpan) rightSpan.style.opacity = canAnswer ? "1" : "0";
@@ -256,7 +256,10 @@ function generateStep(prev) {
     // 30% chance to match previous
     position = Math.random() < 0.5 ? prev.position : randomIndex;
     color = Math.random() < 0.5 ? prev.color : Math.floor(Math.random() * 9);
-    letter = triple && Math.random() < 0.5 ? prev.letter : Math.floor(Math.random() * 9);
+    letter =
+      triple && Math.random() < 0.5
+        ? prev.letter
+        : Math.floor(Math.random() * 9);
   } else {
     position = randomIndex;
     color = Math.floor(Math.random() * 9);
@@ -270,7 +273,9 @@ function generateStep(prev) {
 function render(step) {
   const square = squares[step.position];
   const colorVar = colors[step.color];
-  const colorValue = getComputedStyle(document.documentElement).getPropertyValue(colorVar);
+  const colorValue = getComputedStyle(
+    document.documentElement,
+  ).getPropertyValue(colorVar);
 
   // Set active square
   square.classList.add("active");
@@ -330,7 +335,7 @@ function nextRound() {
   // Check if we should move to next cycle or end
   if (total >= CYCLE_LENGTH * (cycles + 1)) {
     cycles++;
-    if (cycles >= 6) {
+    if (cycles >= 5) {
       endGame();
       return;
     }
@@ -427,13 +432,15 @@ function checkAnswers() {
 
   // Check position
   const posMatch = current.position === prev.position;
-  const posCorrect = (posMatch && lastReply.position) || (!posMatch && !lastReply.position);
+  const posCorrect =
+    (posMatch && lastReply.position) || (!posMatch && !lastReply.position);
   if (posCorrect) correctPosC++;
   flashButton(buttonLeft, posCorrect);
 
   // Check color
   const colMatch = current.color === prev.color;
-  const colCorrect = (colMatch && lastReply.color) || (!colMatch && !lastReply.color);
+  const colCorrect =
+    (colMatch && lastReply.color) || (!colMatch && !lastReply.color);
   if (colCorrect) correctColC++;
   flashButton(buttonRight, colCorrect);
 
@@ -441,7 +448,8 @@ function checkAnswers() {
   let letCorrect = true; // Default true for dual mode
   if (triple) {
     const letMatch = current.letter === prev.letter;
-    letCorrect = (letMatch && lastReply.letter) || (!letMatch && !lastReply.letter);
+    letCorrect =
+      (letMatch && lastReply.letter) || (!letMatch && !lastReply.letter);
     if (letCorrect) correctLetC++;
     flashButton(buttonBottom, letCorrect);
   }
@@ -452,9 +460,9 @@ function checkAnswers() {
     setTimeout(() => {
       haptic(200); // Celebration haptic
       // Brain pop animation
-      const brainIcon = document.querySelector('.brain-container');
-      brainIcon.classList.add('pop');
-      setTimeout(() => brainIcon.classList.remove('pop'), 600);
+      const brainIcon = document.querySelector(".brain-container");
+      brainIcon.classList.add("pop");
+      setTimeout(() => brainIcon.classList.remove("pop"), 600);
     }, 600); // After feedback flashes
   }
 
@@ -481,44 +489,30 @@ function updateStatsDisplay() {
 }
 
 function updateBrainProgress() {
-  const maxRounds = CYCLE_LENGTH * 6; // 120 total rounds
-  const progress = Math.min(total / maxRounds, 1); // 0 to 1
-  const percentage = Math.round(progress * 100);
+  const maxRounds = CYCLE_LENGTH * 5;
+  const progress = Math.min(total / maxRounds, 1);
 
-  // Update fill amount (clip-path from bottom)
-  const fillInset = 100 - percentage;
-  brainFill.style.setProperty('--fill-inset', `${fillInset}%`);
+  // RECALIBRATION:
+  // 88% inset is the bottom of the brain.
+  // 8% inset is the visual top.
+  const bottom = 88;
+  const top = 8;
+  const fillInset = bottom - progress * (bottom - top);
 
-  // Update progress text
+  brainFill.style.setProperty("--fill-inset", `${fillInset}%`);
+
+  // Update fire with progress and the new bounded inset
+  FireSystem.update(progress, fillInset);
+
   progressText.textContent = `${total}/${maxRounds}`;
-
-  // Color progression based on progress - vibrant fire gradients
-  let gradient;
-
-  if (progress < 0.2) {
-    // 0-20%: Red to orange
-    gradient = 'linear-gradient(to top, #8b0000, #dc143c, #ff4500, #ffa500)';
-  } else if (progress < 0.4) {
-    // 20-40%: Orange to yellow
-    gradient = 'linear-gradient(to top, #ff4500, #ff8c00, #ffa500, #ffd700)';
-  } else if (progress < 0.6) {
-    // 40-60%: Yellow to bright orange
-    gradient = 'linear-gradient(to top, #ffd700, #ffaa00, #ff8800, #ff6600)';
-  } else if (progress < 0.8) {
-    // 60-80%: Hot fire - red to yellow
-    gradient = 'linear-gradient(to top, #ff0000, #ff4400, #ff8800, #ffcc00)';
-  } else {
-    // 80-100%: White-hot fire
-    gradient = 'linear-gradient(to top, #ff0000, #ff6600, #ffaa00, #ffee00, #ffffff)';
-  }
-
-  brainFill.style.background = gradient;
 }
 
 // Show results modal
 function showResults() {
   const totalAnswers = triple ? total * 3 : total * 2;
-  const correctAnswers = triple ? correctPosC + correctColC + correctLetC : correctPosC + correctColC;
+  const correctAnswers = triple
+    ? correctPosC + correctColC + correctLetC
+    : correctPosC + correctColC;
   const percentage = Math.round((correctAnswers / totalAnswers) * 100);
 
   let html = `<h2>Game Over</h2>`;
@@ -536,6 +530,101 @@ function showResults() {
   modalContent.innerHTML = html;
   modal.classList.remove("hidden");
 }
+
+const FireSystem = {
+  canvas: null,
+  ctx: null,
+  particles: [],
+  fillInset: 88,
+  progress: 0,
+
+  init() {
+    this.canvas = document.getElementById("fire-canvas");
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext("2d");
+    this.resize();
+    window.addEventListener("resize", () => this.resize());
+    this.loop = this.loop.bind(this);
+    requestAnimationFrame(this.loop);
+  },
+
+  resize() {
+    const rect = this.canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    this.canvas.width = rect.width * dpr;
+    this.canvas.height = rect.height * dpr;
+    this.ctx.scale(dpr, dpr);
+  },
+
+  update(progress, fillInset) {
+    this.progress = progress;
+    this.fillInset = fillInset;
+  },
+
+  loop() {
+    const { ctx, canvas, particles, fillInset, progress } = this;
+    const width = canvas.width / (window.devicePixelRatio || 1);
+    const height = canvas.height / (window.devicePixelRatio || 1);
+
+    ctx.clearRect(0, 0, width, height);
+
+    // 1. Calculate Intensity
+    // If progress is 0, intensity is 0.
+    // Otherwise, it starts at a tiny 0.02 (2%) baseline and ramps up.
+    const intensity = progress > 0 ? Math.pow(progress, 3) * 0.98 + 0.02 : 0;
+
+    // 2. Spawn Particles
+    // Cap max particles dynamically so it doesn't look crowded at low progress.
+    const maxParticles = progress > 0 ? 5 + Math.floor(130 * intensity) : 0;
+
+    if (particles.length < maxParticles && Math.random() < intensity) {
+      const surfaceY = height * (Math.max(8, fillInset) / 100) + 2;
+
+      particles.push({
+        x: width / 2 + (Math.random() - 0.5) * (width * 0.5),
+        y: surfaceY,
+        vx: (Math.random() - 0.5) * 0.2,
+        vy: -(Math.random() * 0.8 + 0.4),
+        size: Math.random() * 1.2 + 0.4,
+        life: 1.0,
+        decay: Math.random() * 0.03 + 0.015,
+      });
+    }
+
+    // 3. Update & Draw (Same as before)
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= p.decay;
+
+      if (p.life <= 0) {
+        particles.splice(i, 1);
+        continue;
+      }
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+
+      if (p.life > 0.6) {
+        ctx.fillStyle = `rgba(255, 255, 255, ${p.life})`;
+      } else if (p.life > 0.3) {
+        ctx.fillStyle = `rgba(255, 160, 20, ${p.life})`;
+      } else {
+        ctx.fillStyle = `rgba(220, 40, 0, ${p.life})`;
+      }
+      ctx.fill();
+    }
+    requestAnimationFrame(this.loop);
+  },
+};
+FireSystem.init();
+
+// Testing helper for ES6 module console access
+window.testFire = (val) => {
+  total = val;
+  updateBrainProgress();
+};
 
 // Initialize
 updateLevelDisplay();

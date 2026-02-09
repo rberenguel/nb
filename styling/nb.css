@@ -138,7 +138,10 @@ body {
   grid-template-columns: repeat(3, 1fr); /* 3 equal columns */
   grid-template-rows: repeat(3, 1fr); /* 3 equal rows */
   max-width: 1024px;
-  width: round(calc(100% - 4em), 1px); /* leave guaranteed space for the side buttons */
+  width: round(
+    calc(100% - 4em),
+    1px
+  ); /* leave guaranteed space for the side buttons */
   position: fixed; /* Something has broken in this positioning */
   left: round(50%, 1px);
   transform: translate(round(calc(-50% - 1em), 1px), 0%);

@@ -1,6 +1,6 @@
 {
   "short_name": "NB",
-  "version": "0.3.2",
+  "version": "0.4.0-alpha",
   "name": "NB",
   "description": "Visual-only dual and triple n-back task",
   "icons": [
@@ -15,7 +15,7 @@
       "type": "image/png"
     }
   ],
-  "start_url": "./index.html",
+  "start_url": "./v2/v2.html",
   "display": "standalone",
   "background_color": "#8d8673",
   "theme_color": "#2b3b4b"
