@@ -744,7 +744,7 @@ window.testFire = (val) => {
 };
 
 window.nb = {
-  testStars: renderStars
+  testStars: renderStars,
 };
 
 // Initialize progress icon display
@@ -838,25 +838,44 @@ document.addEventListener("keydown", (e) => {
 // Session stars display
 function getTodaysSessions() {
   const now = new Date();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const startOfDay = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  ).getTime();
   const endOfDay = startOfDay + 24 * 60 * 60 * 1000;
 
-  return sessions.filter(session =>
-    session.date >= startOfDay && session.date < endOfDay
+  return sessions.filter(
+    (session) => session.date >= startOfDay && session.date < endOfDay,
   ).length;
 }
 
+// Achievement icons for completed sessions
+const ACHIEVEMENT_ICONS = [
+  "\ue46a", // star
+  "\ue320", // medal
+  "\ue67e", // trophy
+  "\ue74e", // brain
+  "\ue62c", // graduation-cap
+  "\ue2de", // lightning
+  "\ue57a", // hand-fist
+];
+
 function renderStars(count) {
-  sessionStars.innerHTML = '';
+  sessionStars.innerHTML = "";
 
   if (count === 0) return;
 
   // Calculate harmonic positions: distribute evenly with equal spacing
   // For n stars, position i at: (i + 1) / (n + 1) * 100%
   for (let i = 0; i < count; i++) {
-    const star = document.createElement('div');
-    star.className = 'session-star';
-    star.textContent = '\ue46a'; // Phosphor star icon
+    const star = document.createElement("div");
+    star.className = "session-star";
+
+    // Random icon for each session
+    const randomIcon =
+      ACHIEVEMENT_ICONS[Math.floor(Math.random() * ACHIEVEMENT_ICONS.length)];
+    star.textContent = randomIcon;
 
     const position = ((i + 1) / (count + 1)) * 100;
     star.style.left = `${position}%`;

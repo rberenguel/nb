@@ -207,18 +207,41 @@ body {
   pointer-events: none;
 }
 
+@keyframes starGradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
 .session-star {
   position: absolute;
   top: 0;
   font-family: "Phosphor-Light";
   font-size: 2rem;
-  color: var(--text-color);
-  opacity: 0.4;
+  background-image: linear-gradient(
+    90deg,
+    #ff8c00,
+    #ffa500,
+    #ffb733,
+    #ffd700,
+    #ffb733,
+    #ffa500,
+    #ff8c00
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  opacity: 0.6;
   transition: opacity 0.3s ease;
+  animation: starGradientShift 3s linear infinite alternate;
 }
 
 .session-star:hover {
-  opacity: 0.8;
+  opacity: 1;
 }
 
 /* 3x3 grid */
