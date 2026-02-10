@@ -25,6 +25,31 @@ const CYCLE_LENGTH = 20;
 const TOTAL_TIME = () => (triple ? 5000 : 3000);
 const RESET_TIME = () => 300;
 
+// Progress icon configurations
+// All icon sets use the same gradient fill system (defined in CSS)
+const PROGRESS_ICON_SETS = [
+  {
+    name: "brain",
+    icons: ["\ue74e"], // Single icon
+    fillRange: { bottom: 88, top: 8 }, // Brain doesn't fill full height
+  },
+  {
+    name: "battery-vertical",
+    icons: [
+      { threshold: 0, icon: "\ue7c6" }, // empty
+      { threshold: 0.2, icon: "\ue7be" }, // low
+      { threshold: 0.4, icon: "\ue7c0" }, // medium
+      { threshold: 0.6, icon: "\ue7c2" }, // high
+      { threshold: 0.8, icon: "\ue7c4" }, // full
+    ],
+    fillRange: { bottom: 100, top: 0 }, // Battery is full height
+  },
+];
+
+// Randomly select an icon set on page load
+const selectedIconSet =
+  PROGRESS_ICON_SETS[Math.floor(Math.random() * PROGRESS_ICON_SETS.length)];
+
 // Colors and letters
 const colors = [
   "--color1",
@@ -49,6 +74,7 @@ const buttonLeft = document.getElementById("button-left");
 const buttonRight = document.getElementById("button-right");
 const buttonBottom = document.getElementById("button-bottom");
 const buttonPause = document.getElementById("button-pause");
+const brainBase = document.querySelector(".brain-base");
 const brainFill = document.querySelector(".brain-fill");
 const progressText = document.querySelector(".progress-text");
 
@@ -506,13 +532,29 @@ function updateBrainProgress() {
   const maxRounds = CYCLE_LENGTH * 5;
   const progress = Math.min(total / maxRounds, 1);
 
-  // RECALIBRATION:
-  // 88% inset is the bottom of the brain.
-  // 8% inset is the visual top.
-  const bottom = 88;
-  const top = 8;
-  const fillInset = bottom - progress * (bottom - top);
+  // Determine which icon to show based on progress
+  let currentIcon;
+  if (typeof selectedIconSet.icons[0] === "string") {
+    // Single icon (brain)
+    currentIcon = selectedIconSet.icons[0];
+  } else {
+    // Multiple icons (battery) - find current based on threshold
+    currentIcon = selectedIconSet.icons[0].icon;
+    for (const iconDef of selectedIconSet.icons) {
+      if (progress >= iconDef.threshold) {
+        currentIcon = iconDef.icon;
+      }
+    }
+  }
 
+  // Update both base and fill to show current icon
+  brainBase.textContent = currentIcon;
+  brainFill.textContent = currentIcon;
+
+  // Update gradient fill (same for all icon sets)
+  const bottom = selectedIconSet.fillRange.bottom;
+  const top = selectedIconSet.fillRange.top;
+  const fillInset = bottom - progress * (bottom - top);
   brainFill.style.setProperty("--fill-inset", `${fillInset}%`);
 
   // Update fire with progress and the new bounded inset
@@ -566,5 +608,19 @@ window.testFire = (val) => {
   updateBrainProgress();
 };
 
+// Initialize progress icon display
+function initProgressIcon() {
+  // Get initial icon
+  const initialIcon =
+    typeof selectedIconSet.icons[0] === "string"
+      ? selectedIconSet.icons[0]
+      : selectedIconSet.icons[0].icon;
+
+  // Set initial icon (gradient is already in CSS)
+  brainBase.textContent = initialIcon;
+  brainFill.textContent = initialIcon;
+}
+
 // Initialize
+initProgressIcon();
 updateLevelDisplay();

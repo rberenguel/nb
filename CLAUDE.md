@@ -627,9 +627,31 @@ function flashButton(button, correct) {
 - **During pause:** Shows Phosphor pause icon (unicode \ue39e) at 50% opacity with Phosphor-Light font
 - Font size: 3rem, bold
 
-#### Brain Progress
-- Brain icon (Phosphor font icon)
-- Gradient fill from bottom to top
+#### Progress Indicator
+- **Randomized on page load** - adds variety to each session
+- **All icon sets use the same gradient fill system**
+
+**Option 1: Brain (1 icon)**
+- Single Phosphor brain icon (\ue74e)
+- Gradient fills from bottom to top as progress increases
+- Fill range: 88% (bottom) to 8% (top) - adjusted for brain shape
+
+**Option 2: Battery Vertical (5 icons)**
+- Icon switches based on progress while gradient fills:
+  - 0-19%: Empty battery (\ue7c6)
+  - 20-39%: Low battery (\ue7be)
+  - 40-59%: Medium battery (\ue7c0)
+  - 60-79%: High battery (\ue7c2)
+  - 80-100%: Full battery (\ue7c4)
+- Gradient continues to fill smoothly even as icon changes
+- Fill range: 100% (bottom) to 0% (top) - battery is full height
+
+**Gradient (shared by all):**
+- Colors: crimson → orangered → orange → gold (defined in CSS)
+- Fill clip-path animates continuously based on progress
+- Each icon set has its own fillRange to match its visual shape
+
+**Common elements:**
 - Progress text: "42/100"
 - Particle fire effect overlay
 - Pop animation on perfect rounds
@@ -670,45 +692,97 @@ Tap to close
 
 ## Visual Feedback Systems
 
-### Brain Progress Indicator
+### Progress Indicator System
 
 **Location:** Top right of screen
 
-**Components:**
-1. Brain base (gray, 30% opacity)
-2. Brain fill (gradient, clips from bottom to top)
-3. Fire particle canvas overlay
-4. Progress text below
+**Architecture:** All icon sets use identical gradient fill system. The only difference is whether they use 1 icon or multiple icons.
 
-**Fill Animation:**
+#### Icon Set Configuration
+
+```javascript
+const PROGRESS_ICON_SETS = [
+  {
+    name: "brain",
+    icons: ["\ue74e"], // Single icon
+    fillRange: { bottom: 88, top: 8 } // Brain doesn't fill full height
+  },
+  {
+    name: "battery-vertical",
+    icons: [
+      { threshold: 0, icon: "\ue7c6" },   // empty
+      { threshold: 0.2, icon: "\ue7be" }, // low
+      { threshold: 0.4, icon: "\ue7c0" }, // medium
+      { threshold: 0.6, icon: "\ue7c2" }, // high
+      { threshold: 0.8, icon: "\ue7c4" }  // full
+    ],
+    fillRange: { bottom: 100, top: 0 } // Battery is full height
+  }
+];
+
+// Random selection on page load
+const selectedIconSet = PROGRESS_ICON_SETS[Math.floor(Math.random() * PROGRESS_ICON_SETS.length)];
+```
+
+#### Update Logic
+
 ```javascript
 function updateBrainProgress() {
-  const maxRounds = CYCLE_LENGTH * 5; // 100
-  const progress = Math.min(total / maxRounds, 1); // 0.0 to 1.0
+  const progress = Math.min(total / 100, 1);
 
-  // Brain visual fill range: 88% (bottom) to 8% (top)
-  const bottom = 88;
-  const top = 8;
+  // Determine which icon to show
+  let currentIcon;
+  if (typeof selectedIconSet.icons[0] === "string") {
+    // Single icon (brain)
+    currentIcon = selectedIconSet.icons[0];
+  } else {
+    // Multiple icons (battery) - find based on threshold
+    currentIcon = selectedIconSet.icons[0].icon;
+    for (const iconDef of selectedIconSet.icons) {
+      if (progress >= iconDef.threshold) {
+        currentIcon = iconDef.icon;
+      }
+    }
+  }
+
+  // Update both base and fill layers
+  brainBase.textContent = currentIcon;
+  brainFill.textContent = currentIcon;
+
+  // Update gradient fill (same for ALL icon sets)
   const fillInset = bottom - progress * (bottom - top);
-
   brainFill.style.setProperty('--fill-inset', `${fillInset}%`);
-
-  // Update fire system
-  FireSystem.update(progress, fillInset);
-
-  progressText.textContent = `${total}/${maxRounds}`;
 }
 ```
 
-**Gradient:**
-```css
-background: linear-gradient(to top,
-  #dc143c,  /* Crimson */
-  #ff4500,  /* OrangeRed */
-  #ffa500,  /* Orange */
-  #ffd700   /* Gold */
-);
+**Key insight:** Battery icons switch at 20% intervals, but the gradient fill continues smoothly throughout. At 0-19% you see empty battery gradually filling with gradient, at 20-39% you see low battery filling, etc.
+
+#### Adding New Icon Sets
+
+**Single icon example:**
+```javascript
+{
+  name: "heart",
+  icons: ["\uXXXX"], // Just one icon
+  fillRange: { bottom: 90, top: 10 } // Adjust based on icon shape
+}
 ```
+
+**Multiple icons example:**
+```javascript
+{
+  name: "wifi-signal",
+  icons: [
+    { threshold: 0, icon: "\uXXXX" },    // no signal
+    { threshold: 0.25, icon: "\uXXXX" }, // 1 bar
+    { threshold: 0.5, icon: "\uXXXX" },  // 2 bars
+    { threshold: 0.75, icon: "\uXXXX" }  // 3 bars
+  ],
+  fillRange: { bottom: 100, top: 0 } // Full height if icon fills entire bounds
+}
+```
+
+**Important:** Each icon has different visual bounds within its character space. Set `fillRange` to match where the icon's visual content actually sits (not necessarily 0-100). The gradient is defined in CSS and shared by all icons.
 
 **Pop Animation (on perfect round):**
 ```css
