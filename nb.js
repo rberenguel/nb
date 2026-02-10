@@ -1,6 +1,7 @@
 // Import modules
 import { haptic } from "./haptic.js";
 import { FireSystem } from "./fire.js";
+import { Fireworks } from "./fireworks.js";
 import * as Modals from "./modals.js";
 import { get, set } from "./lib/idb-keyval.js";
 
@@ -12,6 +13,7 @@ let correctPosC = 0;
 let correctColC = 0;
 let correctLetC = 0;
 let total = 0;
+let perfectRounds = 0; // Track perfect rounds for fire gradient
 let cycles = 0;
 let active = false;
 let lastReply = { position: false, color: false, letter: false };
@@ -113,6 +115,8 @@ const brainBase = document.querySelector(".brain-base");
 const brainFill = document.querySelector(".brain-fill");
 const progressText = document.querySelector(".progress-text");
 const sessionStars = document.getElementById("session-stars");
+const brainProgressFill = document.querySelector(".brain-progress-fill");
+const brainFireFill = document.querySelector(".brain-fire-fill");
 
 // Initialize squares
 const squares = Array.from(document.querySelectorAll(".square"));
@@ -129,6 +133,7 @@ function resetEverything() {
   correctColC = 0;
   combo = -1;
   total = 0;
+  perfectRounds = 0;
   lastRoundWasWarmup = true;
   resetReply();
   updateBrainProgress(); // Reset brain to 0
@@ -668,6 +673,7 @@ function checkAnswers() {
   // Perfect round celebration
   const isPerfect = posCorrect && colCorrect && letCorrect;
   if (isPerfect) {
+    perfectRounds++; // Increment fire gradient progress
     setTimeout(() => {
       haptic(200); // Celebration haptic
       // Brain pop animation
@@ -680,6 +686,11 @@ function checkAnswers() {
   // Update stats after flash
   setTimeout(() => {
     updateStatsDisplay();
+
+    // Celebrate milestones (20, 40, 60, 80)
+    if (total === 20 || total === 40 || total === 60 || total === 80) {
+      Fireworks.triggerAtElement(levelDisplay);
+    }
   }, 300);
 }
 
@@ -702,6 +713,7 @@ function updateStatsDisplay() {
 function updateBrainProgress() {
   const maxRounds = CYCLE_LENGTH * 5;
   const progress = Math.min(total / maxRounds, 1);
+  const fireProgress = Math.min(perfectRounds / maxRounds, 1);
 
   // Determine which icon to show based on progress
   let currentIcon;
@@ -718,18 +730,25 @@ function updateBrainProgress() {
     }
   }
 
-  // Update both base and fill to show current icon
+  // Update all layers to show current icon
   brainBase.textContent = currentIcon;
-  brainFill.textContent = currentIcon;
+  brainProgressFill.textContent = currentIcon;
+  brainFireFill.textContent = currentIcon;
 
-  // Update gradient fill (same for all icon sets)
+  // Calculate insets for both gradients
   const bottom = selectedIconSet.fillRange.bottom;
   const top = selectedIconSet.fillRange.top;
-  const fillInset = bottom - progress * (bottom - top);
-  brainFill.style.setProperty("--fill-inset", `${fillInset}%`);
 
-  // Update fire with progress and the new bounded inset
-  FireSystem.update(progress, fillInset);
+  // Overall progress gradient (always increases)
+  const progressInset = bottom - progress * (bottom - top);
+  brainProgressFill.style.setProperty("--progress-inset", `${progressInset}%`);
+
+  // Fire gradient (only increases on perfect rounds)
+  const fireInset = bottom - fireProgress * (bottom - top);
+  brainFireFill.style.setProperty("--fire-inset", `${fireInset}%`);
+
+  // Update fire particles based on fire progress (not overall progress)
+  FireSystem.update(fireProgress, fireInset);
 
   progressText.textContent = `${total}/${maxRounds}`;
 }
@@ -757,7 +776,8 @@ function initProgressIcon() {
 
   // Set initial icon (gradient is already in CSS)
   brainBase.textContent = initialIcon;
-  brainFill.textContent = initialIcon;
+  brainProgressFill.textContent = initialIcon;
+  brainFireFill.textContent = initialIcon;
 }
 
 // Update round display for IDLE/PAUSE states

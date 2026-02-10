@@ -157,7 +157,18 @@ body {
   opacity: 0.3;
 }
 
-.brain-fill {
+/* Overall progress fill - solid grey */
+.brain-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: #555;
+  clip-path: inset(var(--progress-inset, 100%) 0 0 0);
+  transition: clip-path 0.5s ease;
+}
+
+/* Fire/momentum fill - colorful gradient, only increases on perfect rounds */
+.brain-fire-fill {
   position: absolute;
   top: 0;
   left: 0;
@@ -165,7 +176,7 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  clip-path: inset(var(--fill-inset, 100%) 0 0 0);
+  clip-path: inset(var(--fire-inset, 100%) 0 0 0);
   transition:
     clip-path 0.5s ease,
     background 1s ease;
@@ -556,6 +567,10 @@ body {
   justify-content: center;
   z-index: 1000;
   pointer-events: none;
+}
+
+#modal a {
+  color: darkgreen;
 }
 
 #modal .modal-content {
