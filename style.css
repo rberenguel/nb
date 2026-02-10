@@ -20,55 +20,6 @@
   --text-color: black;
 }
 
-/* FIRE ADDED */
-
-:root {
-  --glitter: url("https://assets.codepen.io/13471/silver-glitter-background.png");
-}
-
-.letter-container {
-  position: relative;
-  padding: 20px;
-  background: #111;
-  overflow: hidden;
-  border-radius: 8px;
-}
-
-/* The fire effect now lives in its own layer */
-.fire-effect {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: var(--glitter);
-  background-size: 300px 300px;
-  /* Use a simple blend mode */
-  mix-blend-mode: color-dodge;
-  /* Reduce the number of filters */
-  filter: brightness(2) contrast(2);
-  /* Transform-based animation is much cheaper */
-  animation: fire-rise 3s infinite linear;
-  opacity: 0.6;
-}
-
-@keyframes fire-rise {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(-300px);
-  }
-}
-
-.letter-content {
-  position: relative;
-  z-index: 1;
-  color: white;
-  font-family: serif;
-  line-height: 1.6;
-}
-
-/* FIRE END */
-
 * {
   margin: 0;
   padding: 0;
