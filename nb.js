@@ -208,8 +208,6 @@ function startGame() {
 
 // Pause/Resume game
 function togglePause() {
-  paused = true
-  arstartarst
   if (starting) return;
 
   if (!paused && active) {
