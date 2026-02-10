@@ -14,7 +14,7 @@ let correctColC = 0;
 let correctLetC = 0;
 let total = 0;
 let perfectRounds = 0; // Track perfect rounds for fire gradient
-let cycles = 0;
+let roundResults = []; // Track per-round correctness for visualization
 let active = false;
 let lastReply = { position: false, color: false, letter: false };
 let combo = -1;
@@ -28,7 +28,6 @@ let lastRoundWasWarmup = true; // Track if previous round was warmup
 // Session history
 let sessions = [];
 
-const CYCLE_LENGTH = 20;
 const TOTAL_TIME = () => (triple ? 5000 : 3000);
 const RESET_TIME = () => 300;
 
@@ -50,6 +49,18 @@ async function addSession(stats) {
       ? (stats.correctLetC / stats.total) * 100
       : 0;
 
+  // Encode round results compactly: each round as a number 0-7 (3 bits)
+  // Bit 0: position, Bit 1: color, Bit 2: letter
+  const encodedResults = stats.roundResults
+    ? stats.roundResults.map((r) => {
+        let val = 0;
+        if (r.position) val |= 1;
+        if (r.color) val |= 2;
+        if (r.letter) val |= 4;
+        return val;
+      })
+    : [];
+
   sessions.push({
     level: stats.BACK,
     triple: stats.triple,
@@ -57,6 +68,7 @@ async function addSession(stats) {
     pctCol,
     pctLet: stats.triple ? pctLet : null,
     date: Date.now(),
+    roundResults: encodedResults, // Store compact round-by-round results
   });
 
   await saveSessions();
@@ -134,6 +146,7 @@ function resetEverything() {
   combo = -1;
   total = 0;
   perfectRounds = 0;
+  roundResults = [];
   lastRoundWasWarmup = true;
   resetReply();
   updateBrainProgress(); // Reset brain to 0
@@ -264,7 +277,15 @@ function togglePause() {
 
     // Show pause stats modal (pass resumeGame as callback)
     Modals.showPauseStats(
-      { BACK, triple, total, correctPosC, correctColC, correctLetC },
+      {
+        BACK,
+        triple,
+        total,
+        correctPosC,
+        correctColC,
+        correctLetC,
+        roundResults,
+      },
       resumeGame,
     );
   } else if (paused) {
@@ -359,6 +380,7 @@ async function endGame() {
     correctPosC,
     correctColC,
     correctLetC,
+    roundResults,
   });
 }
 
@@ -545,13 +567,10 @@ function nextRound() {
     warmupRounds--;
   }
 
-  // Check if we should move to next cycle or end
-  if (total >= CYCLE_LENGTH * (cycles + 1)) {
-    cycles++;
-    if (cycles >= 5) {
-      endGame();
-      return;
-    }
+  // Check if we've completed 100 rounds
+  if (total >= 100) {
+    endGame();
+    return;
   }
 
   // Generate next step
@@ -670,6 +689,13 @@ function checkAnswers() {
     flashButton(buttonBottom, letCorrect);
   }
 
+  // Store round result for visualization
+  roundResults.push({
+    position: posCorrect,
+    color: colCorrect,
+    letter: triple ? letCorrect : null,
+  });
+
   // Perfect round celebration
   const isPerfect = posCorrect && colCorrect && letCorrect;
   if (isPerfect) {
@@ -711,7 +737,7 @@ function updateStatsDisplay() {
 }
 
 function updateBrainProgress() {
-  const maxRounds = CYCLE_LENGTH * 5;
+  const maxRounds = 100;
   const progress = Math.min(total / maxRounds, 1);
   const fireProgress = Math.min(perfectRounds / maxRounds, 1);
 

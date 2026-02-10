@@ -56,10 +56,16 @@ Press again to toggle answers off. Multiple dimensions can be selected per round
 - **Grey progress fill**: Overall session progress (0-100 rounds)
 - **Colorful fire fill**: Perfect round streak (increases only when all dimensions are correct)
 - **Fireworks**: Milestone celebrations at rounds 20, 40, 60, 80
+- **Progress grid**: 10×10 matrix in pause/results modals showing per-round correctness
+  - Each cell represents one round, split into horizontal bars (position/color/letter)
+  - Green bars = correct, red bars = incorrect
+  - Makes failure clusters and patterns immediately visible
 
 ## Session Data
 
 Completed sessions (100 rounds) are tracked using IndexedDB. Achievement icons appear in the play area showing today's completed sessions. Icons are randomly selected from: star, medal, trophy, brain, graduation cap, lightning, and fist.
+
+Session data includes per-round correctness results (stored compactly for future analysis) which power the progress grid visualization.
 
 ## Technical Notes
 

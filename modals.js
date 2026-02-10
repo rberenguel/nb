@@ -1,5 +1,58 @@
 // Modal management module
 
+/**
+ * Render 10x10 progress grid showing per-round correctness
+ * @param {Array} roundResults - Array of {position, color, letter} objects
+ * @param {boolean} triple - Whether triple mode
+ * @returns {string} HTML string for the grid
+ */
+function renderProgressGrid(roundResults, triple) {
+  if (!roundResults || roundResults.length === 0) {
+    return '<p style="opacity: 0.7; text-align: center;">No rounds completed yet</p>';
+  }
+
+  let html =
+    '<div style="font-size: 0.85rem; opacity: 0.7; margin-bottom: 0.5rem;">';
+  if (triple) {
+    html += "Top: Position, Mid: Color, Bot: Letter";
+  } else {
+    html += "Top: Position, Bot: Color";
+  }
+  html += "</div>";
+
+  html += '<div class="progress-grid">';
+
+  // Create 10x10 grid (100 cells)
+  for (let i = 0; i < 100; i++) {
+    const result = roundResults[i];
+
+    if (!result) {
+      // Not yet played - show empty cell
+      html += '<div class="grid-cell empty"></div>';
+    } else {
+      // Played - show split cell
+      html += '<div class="grid-cell">';
+
+      // Position (top bar)
+      html += `<div class="cell-bar" style="background-color: ${result.position ? "#22c55e" : "#ef4444"}"></div>`;
+
+      // Color (middle/bottom bar)
+      html += `<div class="cell-bar" style="background-color: ${result.color ? "#22c55e" : "#ef4444"}"></div>`;
+
+      // Letter (bottom bar, only in triple mode)
+      if (triple) {
+        html += `<div class="cell-bar" style="background-color: ${result.letter ? "#22c55e" : "#ef4444"}"></div>`;
+      }
+
+      html += "</div>";
+    }
+  }
+
+  html += "</div>";
+
+  return html;
+}
+
 // DOM elements
 const modal = document.getElementById("modal");
 const modalInstructions = document.getElementById("modal-instructions");
@@ -103,6 +156,12 @@ export function showPauseStats(stats, onClose) {
     pauseLetter.classList.add("hidden");
   }
 
+  // Add progress grid visualization
+  const pauseGrid = document.getElementById("pause-grid");
+  if (pauseGrid) {
+    pauseGrid.innerHTML = renderProgressGrid(stats.roundResults, stats.triple);
+  }
+
   showModal(modalPause, onClose);
 }
 
@@ -153,6 +212,15 @@ export function showResults(stats) {
         : "Keep practicing!";
   }
   document.getElementById("results-suggestion").textContent = suggestion;
+
+  // Add progress grid visualization
+  const resultsGrid = document.getElementById("results-grid");
+  if (resultsGrid) {
+    resultsGrid.innerHTML = renderProgressGrid(
+      stats.roundResults,
+      stats.triple,
+    );
+  }
 
   showModal(modalResults);
 }
