@@ -68,21 +68,40 @@ body {
 #level-display {
   font-size: 3rem;
   font-weight: 600;
+  font-family: "Inter", sans-serif;
   cursor: pointer;
-  text-align: center;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #level-display sub {
   font-size: 50%;
+  vertical-align: sub;
+  line-height: 0;
 }
 
 #round-display {
   font-size: 1.5rem;
-  min-width: 6rem;
+  min-width: 15%;
+  max-width: 15%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 /* Brain progress indicator */
 #brain-progress {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  min-width: 15%;
+  max-width: 15%;
+  margin-left: auto;
+}
+
+.brain-progress-content {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -457,14 +476,19 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  pointer-events: none;
 }
 
-#modal-content {
+#modal .modal-content {
+  pointer-events: auto;
+}
+
+.modal-content {
   background-color: var(--background);
   padding: 2rem;
   border-radius: 0.5rem;
@@ -477,34 +501,34 @@ body {
 }
 
 /* Custom scrollbar for modal */
-#modal-content::-webkit-scrollbar {
+.modal-content::-webkit-scrollbar {
   width: 12px;
 }
 
-#modal-content::-webkit-scrollbar-track {
+.modal-content::-webkit-scrollbar-track {
   background: var(--alternate-background);
   border-radius: 0.5rem;
 }
 
-#modal-content::-webkit-scrollbar-thumb {
+.modal-content::-webkit-scrollbar-thumb {
   background: var(--dark);
   border-radius: 0.5rem;
   border: 2px solid var(--alternate-background);
 }
 
-#modal-content::-webkit-scrollbar-thumb:hover {
+.modal-content::-webkit-scrollbar-thumb:hover {
   background: var(--text-color);
 }
 
 /* Firefox scrollbar styling */
-#modal-content {
+.modal-content {
   scrollbar-width: thin;
   scrollbar-color: var(--dark) var(--alternate-background);
 }
 
 /* Responsive adjustments */
 @media (min-width: 768px) {
-  #modal-content {
+  .modal-content {
     max-width: 600px;
   }
 

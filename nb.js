@@ -1,6 +1,7 @@
 // Import modules
 import { haptic } from "./haptic.js";
 import { FireSystem } from "./fire.js";
+import * as Modals from "./modals.js";
 
 // Game state
 let BACK = 1;
@@ -16,7 +17,6 @@ let lastReply = { position: false, color: false, letter: false };
 let combo = -1;
 let starting = true;
 let paused = false;
-let pauseModalOpen = false; // Track if pause triggered the modal
 let nextRoundTimeout = null;
 let renderTimeout = null;
 let warmupRounds = 0;
@@ -69,8 +69,6 @@ const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "J"];
 // DOM elements
 const levelDisplay = document.getElementById("level-display");
 const roundDisplay = document.getElementById("round-display");
-const modal = document.getElementById("modal");
-const modalContent = document.getElementById("modal-content");
 const buttonLeft = document.getElementById("button-left");
 const buttonRight = document.getElementById("button-right");
 const buttonBottom = document.getElementById("button-bottom");
@@ -213,9 +211,11 @@ function togglePause() {
     roundDisplay.style.cursor = "pointer";
     roundDisplay.style.opacity = "1";
 
-    // Show pause stats modal
-    pauseModalOpen = true;
-    showPauseStats();
+    // Show pause stats modal (pass resumeGame as callback)
+    Modals.showPauseStats(
+      { BACK, triple, total, correctPosC, correctColC, correctLetC },
+      resumeGame
+    );
   } else if (paused) {
     // Resume the game
     resumeGame();
@@ -226,12 +226,6 @@ function togglePause() {
 function resumeGame() {
   paused = false;
   active = true;
-  pauseModalOpen = false;
-
-  // Close modal if open
-  if (!modal.classList.contains("hidden")) {
-    modal.classList.add("hidden");
-  }
 
   // Medium haptic on resume
   haptic(100);
@@ -262,7 +256,6 @@ function endGame() {
   haptic(150);
 
   // Clear all timers
-  clearInterval(progressInterval);
   if (nextRoundTimeout) clearTimeout(nextRoundTimeout);
   if (renderTimeout) clearTimeout(renderTimeout);
 
@@ -296,12 +289,15 @@ function endGame() {
   roundDisplay.style.opacity = "";
 
   // Show results
-  showResults();
+  Modals.showResults({ BACK, triple, total, correctPosC, correctColC, correctLetC });
 }
 
 // Restart game (return to IDLE state)
 function restartGame() {
   if (!paused) return; // Only works during pause
+
+  // Dismiss any open modals
+  Modals.hideModal();
 
   // Clear pause state
   paused = false;
@@ -364,7 +360,7 @@ roundDisplay.addEventListener("click", (e) => {
     restartGame();
   } else if (!active) {
     e.stopPropagation();
-    showInstructions();
+    Modals.showInstructions();
   }
 });
 
@@ -663,108 +659,6 @@ function updateBrainProgress() {
   progressText.textContent = `${total}/${maxRounds}`;
 }
 
-// Show pause stats modal
-function showPauseStats() {
-  if (total === 0) {
-    // No stats yet
-    return;
-  }
-
-  const pctPos = Math.round((100 * correctPosC) / total);
-  const pctCol = Math.round((100 * correctColC) / total);
-  const pctLet = triple ? Math.round((100 * correctLetC) / total) : 0;
-  const totalAnswers = triple ? total * 3 : total * 2;
-  const correctAnswers = triple
-    ? correctPosC + correctColC + correctLetC
-    : correctPosC + correctColC;
-  const overall = Math.round((correctAnswers / totalAnswers) * 100);
-
-  let html = `<h2>Current Session</h2>`;
-  html += `<p style="margin-top: 1rem;">Level: ${BACK}-back ${triple ? "(Triple)" : "(Dual)"}</p>`;
-  html += `<p>Rounds: ${total} / 100</p>`;
-  html += `<p>Overall: ${overall}%</p>`;
-  html += `<hr style="margin: 1rem 0;">`;
-  html += `<p>Position: ${correctPosC}/${total} (${pctPos}%)</p>`;
-  html += `<p>Color: ${correctColC}/${total} (${pctCol}%)</p>`;
-  if (triple) {
-    html += `<p>Letter: ${correctLetC}/${total} (${pctLet}%)</p>`;
-  }
-  html += `<p style="margin-top: 1.5rem; cursor: pointer; opacity: 0.7;" onclick="document.getElementById('modal').classList.add('hidden'); if(window.pauseModalOpen) window.resumeGame();">Tap to close and resume (or press Escape/Space)</p>`;
-
-  modalContent.innerHTML = html;
-  modal.classList.remove("hidden");
-}
-
-// Show instructions modal
-function showInstructions() {
-  let html = `<h2>How to Play</h2>`;
-  html += `<p style="margin-top: 1rem;"><strong>Dual N-Back</strong> is a memory training game. You must remember if the current position and color match what you saw <strong>N steps ago</strong>.</p>`;
-  html += `<hr style="margin: 1rem 0;">`;
-  html += `<h3 style="margin-top: 1rem;">Setup</h3>`;
-  html += `<p><strong>Select level:</strong> Click any square (1-9) to set N-back level</p>`;
-  html += `<p><strong>Toggle mode:</strong> Click the same square again to switch between Dual (2) and Triple (3) modes</p>`;
-  html += `<p><strong>Start:</strong> Click the level number at top</p>`;
-  html += `<hr style="margin: 1rem 0;">`;
-  html += `<h3 style="margin-top: 1rem;">Playing</h3>`;
-  html += `<p><strong>Position:</strong> Press left edge if position matches N steps ago</p>`;
-  html += `<p><strong>Color:</strong> Press right edge if color matches N steps ago</p>`;
-  html += `<p><strong>Letter (Triple):</strong> Press bottom if letter matches N steps ago</p>`;
-  html += `<p style="margin-top: 1rem;">Press again to toggle off. You can answer multiple dimensions per round.</p>`;
-  html += `<hr style="margin: 1rem 0;">`;
-  html += `<h3 style="margin-top: 1rem;">Feedback</h3>`;
-  html += `<p><strong>Green flash:</strong> Correct answer!</p>`;
-  html += `<p><strong>Red flash:</strong> Incorrect answer</p>`;
-  html += `<p><strong>Brain/battery fills:</strong> Your progress through 100 rounds</p>`;
-  html += `<hr style="margin: 1rem 0;">`;
-  html += `<h3 style="margin-top: 1rem;">Controls</h3>`;
-  html += `<p><strong>Touch:</strong> Press left/right/bottom edges</p>`;
-  html += `<p><strong>Keyboard:</strong> Z (position) / X (letter) / C (color)</p>`;
-  html += `<p><strong>Space:</strong> Start game / Pause / Resume</p>`;
-  html += `<p><strong>? key:</strong> Show this help</p>`;
-  html += `<p><strong>Escape:</strong> Close modal</p>`;
-  html += `<p><strong>Restart:</strong> Click restart icon (↺) when paused</p>`;
-  html += `<p style="margin-top: 1.5rem; cursor: pointer; opacity: 0.7;" onclick="document.getElementById('modal').classList.add('hidden')">Tap to close (or press Escape)</p>`;
-
-  modalContent.innerHTML = html;
-  modal.classList.remove("hidden");
-}
-
-// Show results modal
-function showResults() {
-  const totalAnswers = triple ? total * 3 : total * 2;
-  const correctAnswers = triple
-    ? correctPosC + correctColC + correctLetC
-    : correctPosC + correctColC;
-  const percentage = Math.round((correctAnswers / totalAnswers) * 100);
-
-  let html = `<h2>Game Over</h2>`;
-  html += `<p>Level: ${BACK}-back ${triple ? "(Triple)" : "(Dual)"}</p>`;
-  html += `<p>Rounds: ${total}</p>`;
-  html += `<p>Overall: ${percentage}%</p>`;
-  html += `<hr style="margin: 1rem 0;">`;
-  html += `<p>Position: ${correctPosC}/${total} (${Math.round((correctPosC / total) * 100)}%)</p>`;
-  html += `<p>Color: ${correctColC}/${total} (${Math.round((correctColC / total) * 100)}%)</p>`;
-  if (triple) {
-    html += `<p>Letter: ${correctLetC}/${total} (${Math.round((correctLetC / total) * 100)}%)</p>`;
-  }
-
-  // Add level suggestion based on performance
-  let suggestion = "";
-  if (percentage >= 80) {
-    suggestion = BACK < 9 ? "Consider advancing to a higher level" : "Excellent work at maximum level!";
-  } else if (percentage >= 50) {
-    suggestion = "Keep practicing at this level";
-  } else {
-    suggestion = BACK > 1 ? "Try an easier level for better results" : "Keep practicing!";
-  }
-  html += `<p style="margin-top: 1rem; font-size: 0.85rem; opacity: 0.7;">${suggestion}</p>`;
-
-  html += `<p style="margin-top: 1rem; cursor: pointer;" onclick="document.getElementById('modal').classList.add('hidden')">Tap to close</p>`;
-
-  modalContent.innerHTML = html;
-  modal.classList.remove("hidden");
-}
-
 // Initialize fire particle system
 FireSystem.init();
 
@@ -814,15 +708,10 @@ document.addEventListener("keydown", (e) => {
 
   // Global shortcuts (work in any state)
   if (key === "escape") {
-    // Dismiss modal and resume if in pause mode
-    if (!modal.classList.contains("hidden")) {
+    // Dismiss modal (will trigger resume callback if it's the pause modal)
+    if (!Modals.modal.classList.contains("hidden")) {
       e.preventDefault();
-      modal.classList.add("hidden");
-
-      // If closing pause stats modal, resume game
-      if (pauseModalOpen && paused) {
-        resumeGame();
-      }
+      Modals.hideModal();
     }
     return;
   }
@@ -830,7 +719,7 @@ document.addEventListener("keydown", (e) => {
   if (key === "?" || key === "/") {
     // Open info dialog (? or / for US keyboards where ? requires shift)
     e.preventDefault();
-    showInstructions();
+    Modals.showInstructions();
     return;
   }
 

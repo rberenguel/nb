@@ -18,12 +18,14 @@
         <div id="round-display"></div>
         <div id="level-display">1<sub>2</sub></div>
         <div id="brain-progress">
-          <div class="brain-container">
-            <div class="brain-base">&#xe74e;</div>
-            <div class="brain-fill">&#xe74e;</div>
-            <canvas id="fire-canvas"></canvas>
+          <div class="brain-progress-content">
+            <div class="brain-container">
+              <div class="brain-base">&#xe74e;</div>
+              <div class="brain-fill">&#xe74e;</div>
+              <canvas id="fire-canvas"></canvas>
+            </div>
+            <div class="progress-text">0/120</div>
           </div>
-          <div class="progress-text">0/120</div>
         </div>
       </div>
 
@@ -73,9 +75,65 @@
       <div id="button-pause" class="pause-button hidden"></div>
     </div>
 
-    <!-- Modal for game results -->
+    <!-- Modals -->
     <div id="modal" class="hidden">
-      <div id="modal-content"></div>
+      <!-- Instructions modal -->
+      <div id="modal-instructions" class="modal-content hidden">
+        <h2>How to Play</h2>
+        <p style="margin-top: 1rem;"><strong>Dual N-Back</strong> is a memory training game. You must remember if the current position and color match what you saw <strong>N steps ago</strong>.</p>
+        <hr style="margin: 1rem 0;">
+        <h3 style="margin-top: 1rem;">Setup</h3>
+        <p><strong>Select level:</strong> Click any square (1-9) to set N-back level</p>
+        <p><strong>Toggle mode:</strong> Click the same square again to switch between Dual (2) and Triple (3) modes</p>
+        <p><strong>Start:</strong> Click the level number at top</p>
+        <hr style="margin: 1rem 0;">
+        <h3 style="margin-top: 1rem;">Playing</h3>
+        <p><strong>Position:</strong> Press left edge if position matches N steps ago</p>
+        <p><strong>Color:</strong> Press right edge if color matches N steps ago</p>
+        <p><strong>Letter (Triple):</strong> Press bottom if letter matches N steps ago</p>
+        <p style="margin-top: 1rem;">Press again to toggle off. You can answer multiple dimensions per round.</p>
+        <hr style="margin: 1rem 0;">
+        <h3 style="margin-top: 1rem;">Feedback</h3>
+        <p><strong>Green flash:</strong> Correct answer!</p>
+        <p><strong>Red flash:</strong> Incorrect answer</p>
+        <p><strong>Brain/battery fills:</strong> Your progress through 100 rounds</p>
+        <hr style="margin: 1rem 0;">
+        <h3 style="margin-top: 1rem;">Controls</h3>
+        <p><strong>Touch:</strong> Press left/right/bottom edges</p>
+        <p><strong>Keyboard:</strong> Z (position) / X (letter) / C (color)</p>
+        <p><strong>Space:</strong> Start game / Pause / Resume</p>
+        <p><strong>? key:</strong> Show this help</p>
+        <p><strong>Escape:</strong> Close modal</p>
+        <p><strong>Restart:</strong> Click restart icon (↺) when paused</p>
+        <p style="margin-top: 1.5rem; cursor: pointer; opacity: 0.7;" class="modal-close-hint">Tap to close (or press Escape)</p>
+      </div>
+
+      <!-- Pause stats modal -->
+      <div id="modal-pause" class="modal-content hidden">
+        <h2>Current Session</h2>
+        <p style="margin-top: 1rem;" id="pause-level">Level: 3-back (Dual)</p>
+        <p id="pause-rounds">Rounds: 42 / 100</p>
+        <p id="pause-overall">Overall: 87%</p>
+        <hr style="margin: 1rem 0;">
+        <p id="pause-position">Position: 40/42 (95%)</p>
+        <p id="pause-color">Color: 38/42 (90%)</p>
+        <p id="pause-letter" class="hidden">Letter: 35/42 (83%)</p>
+        <p style="margin-top: 1.5rem; cursor: pointer; opacity: 0.7;" class="modal-close-hint">Tap to close and resume (or press Escape/Space)</p>
+      </div>
+
+      <!-- Results modal -->
+      <div id="modal-results" class="modal-content hidden">
+        <h2>Game Over</h2>
+        <p id="results-level">Level: 3-back (Dual)</p>
+        <p id="results-rounds">Rounds: 100</p>
+        <p id="results-overall">Overall: 87%</p>
+        <hr style="margin: 1rem 0;">
+        <p id="results-position">Position: 90/100 (90%)</p>
+        <p id="results-color">Color: 85/100 (85%)</p>
+        <p id="results-letter" class="hidden">Letter: 86/100 (86%)</p>
+        <p id="results-suggestion" style="margin-top: 1rem; font-size: 0.85rem; opacity: 0.7;">Consider advancing to a higher level</p>
+        <p style="margin-top: 1rem; cursor: pointer;" class="modal-close-hint">Tap to close</p>
+      </div>
     </div>
 
     <script type="module" src="nb.js"></script>
