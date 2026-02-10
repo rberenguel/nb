@@ -2,6 +2,7 @@
 import { haptic } from "./haptic.js";
 import { FireSystem } from "./fire.js";
 import * as Modals from "./modals.js";
+import { get, set } from "./lib/idb-keyval.js";
 
 // Game state
 let BACK = 1;
@@ -22,9 +23,42 @@ let renderTimeout = null;
 let warmupRounds = 0;
 let lastRoundWasWarmup = true; // Track if previous round was warmup
 
+// Session history
+let sessions = [];
+
 const CYCLE_LENGTH = 20;
 const TOTAL_TIME = () => (triple ? 5000 : 3000);
 const RESET_TIME = () => 300;
+
+// Session storage functions
+async function loadSessions() {
+  const stored = await get("sessions");
+  sessions = stored || [];
+}
+
+async function saveSessions() {
+  await set("sessions", sessions);
+}
+
+async function addSession(stats) {
+  const pctPos = stats.total > 0 ? (stats.correctPosC / stats.total) * 100 : 0;
+  const pctCol = stats.total > 0 ? (stats.correctColC / stats.total) * 100 : 0;
+  const pctLet =
+    stats.triple && stats.total > 0
+      ? (stats.correctLetC / stats.total) * 100
+      : 0;
+
+  sessions.push({
+    level: stats.BACK,
+    triple: stats.triple,
+    pctPos,
+    pctCol,
+    pctLet: stats.triple ? pctLet : null,
+    date: Date.now(),
+  });
+
+  await saveSessions();
+}
 
 // Progress icon configurations
 // All icon sets use the same gradient fill system (defined in CSS)
@@ -214,7 +248,7 @@ function togglePause() {
     // Show pause stats modal (pass resumeGame as callback)
     Modals.showPauseStats(
       { BACK, triple, total, correctPosC, correctColC, correctLetC },
-      resumeGame
+      resumeGame,
     );
   } else if (paused) {
     // Resume the game
@@ -248,7 +282,7 @@ function resumeGame() {
 }
 
 // End game
-function endGame() {
+async function endGame() {
   paused = false;
   active = false;
 
@@ -288,8 +322,27 @@ function endGame() {
   roundDisplay.style.cursor = "";
   roundDisplay.style.opacity = "";
 
+  // Save session if completed 100 rounds
+  if (total === 100) {
+    await addSession({
+      BACK,
+      triple,
+      total,
+      correctPosC,
+      correctColC,
+      correctLetC,
+    });
+  }
+
   // Show results
-  Modals.showResults({ BACK, triple, total, correctPosC, correctColC, correctLetC });
+  Modals.showResults({
+    BACK,
+    triple,
+    total,
+    correctPosC,
+    correctColC,
+    correctLetC,
+  });
 }
 
 // Restart game (return to IDLE state)
@@ -361,6 +414,16 @@ roundDisplay.addEventListener("click", (e) => {
   } else if (!active) {
     e.stopPropagation();
     Modals.showInstructions();
+  }
+});
+
+// Progress icon click (show session history)
+const brainContainer = document.querySelector(".brain-container");
+brainContainer.addEventListener("click", (e) => {
+  if (!active && !paused) {
+    e.stopPropagation();
+    haptic(50);
+    Modals.showHistory(sessions);
   }
 });
 
@@ -757,6 +820,11 @@ document.addEventListener("keydown", (e) => {
 });
 
 // Initialize
-initProgressIcon();
-updateLevelDisplay();
-updateRoundDisplay();
+async function init() {
+  await loadSessions();
+  initProgressIcon();
+  updateLevelDisplay();
+  updateRoundDisplay();
+}
+
+init();

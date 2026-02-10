@@ -24,15 +24,15 @@ nb/
 ### Key State Variables
 
 ```javascript
-active          // Is game running?
-paused          // Is game paused?
-starting        // Initial startup phase?
-warmupRounds    // Explicit warmup countdown (resume only)
-BACK            // N-back level (1-9)
-triple          // Dual (false) or triple (true) mode
-history         // Array<{position, color, letter}>
-total           // Answerable rounds completed (0-100)
-lastReply       // {position: bool, color: bool, letter: bool}
+active; // Is game running?
+paused; // Is game paused?
+starting; // Initial startup phase?
+warmupRounds; // Explicit warmup countdown (resume only)
+BACK; // N-back level (1-9)
+triple; // Dual (false) or triple (true) mode
+history; // Array<{position, color, letter}>
+total; // Answerable rounds completed (0-100)
+lastReply; // {position: bool, color: bool, letter: bool}
 ```
 
 ## Warmup System
@@ -59,6 +59,7 @@ Answers checked at START of next round, not end of current round.
 ## Step Generation
 
 When `history.length >= BACK`, 30% chance to attempt matches:
+
 - Each dimension has 50% chance to match N-back reference
 - Otherwise fully random
 - Creates ~15% actual match rate (not too easy, not too hard)
@@ -66,11 +67,13 @@ When `history.length >= BACK`, 30% chance to attempt matches:
 ## UI Components
 
 ### Grid (3×3)
+
 - **IDLE:** Click square N to set level to N+1, click again to toggle dual/triple
 - **RUNNING:** Timer animation grows from center (inset 43% → 0%)
 - **Unrender:** Shake animation (0.15s) via `.was-active` class
 
 ### Buttons (invisible touch zones)
+
 - **Left 25%:** Position (vertical text)
 - **Right 25%:** Color (vertical text)
 - **Bottom center 50%:** Letter (horizontal, triple only)
@@ -79,6 +82,7 @@ When `history.length >= BACK`, 30% chance to attempt matches:
 Button text opacity: 0 during warmup, 1 when answerable.
 
 ### Top Bar
+
 - **Round display:** Info icon (IDLE), round number (RUNNING), restart icon (PAUSED)
 - **Level display:** "N₂" or "N₃", clickable to start
 - **Progress:** Randomized icon (brain or battery) with gradient fill + fire particles
@@ -86,6 +90,7 @@ Button text opacity: 0 during warmup, 1 when answerable.
 ## Progress Indicator
 
 Supports multiple icon sets (randomized on load):
+
 - **Brain:** Single icon with 88%→8% fill range
 - **Battery:** 5 icons (empty/low/med/high/full) switching at 20% thresholds, 100%→0% fill range
 
@@ -94,12 +99,14 @@ All use same gradient system (crimson → gold). Add new icons by extending `PRO
 ## Feedback
 
 ### Haptic
+
 - 50ms: Light (square click, button press, pause)
 - 100ms: Medium (start, correct answer, resume)
 - 150ms: Strong (incorrect answer, end)
 - 200ms: Celebration (perfect round)
 
 ### Visual
+
 - **Correct:** Green flash (500ms), medium haptic
 - **Incorrect:** Red flash (500ms), strong haptic
 - **Perfect round:** Brain pop animation (600ms delay), celebration haptic
@@ -122,20 +129,24 @@ Max particles: `5 + Math.floor(130 * intensity)`
 ## Critical Implementation Details
 
 ### Timer Animation
+
 Grows from small to large (not shrinking) so colored border always visible. Uses `inset: 43%` for 14% starting visibility. Desktop uses 6rem padding vs mobile 3rem for similar visual effect.
 
 ### Warmup Logic
+
 Button guard: `if (!active || history.length <= BACK || warmupRounds > 0) return;`
 
 Checks both implicit (initial) and explicit (resume) warmup.
 
 ### Pause Behavior
+
 - Clears all timeouts/animations
 - Preserves statistics and history
 - Resets button states and lastReply
 - Resume triggers BACK-round warmup
 
 ### Answer Checking
+
 Only checks if `!lastRoundWasWarmup && history.length > BACK`
 
 Correct = (match && userSaidMatch) || (!match && !userSaidMatch)
@@ -158,4 +169,4 @@ Correct = (match && userSaidMatch) || (!match && !userSaidMatch)
 
 ---
 
-*Total file size: ~32KB (excellent for PWA)*
+_Total file size: ~32KB (excellent for PWA)_
