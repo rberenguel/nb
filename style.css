@@ -210,7 +210,7 @@ body {
 
 @keyframes timer-countdown {
   from {
-    inset: 3rem;
+    inset: 43%;
   }
   to {
     inset: 0;
@@ -493,16 +493,7 @@ body {
   }
 
   .square {
-    padding: 3.5rem;
-  }
-
-  @keyframes timer-countdown {
-    from {
-      inset: 3.5rem;
-    }
-    to {
-      inset: 0;
-    }
+    padding: 6rem;
   }
 
   /* Hover states for desktop */

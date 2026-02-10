@@ -517,12 +517,16 @@ function generateStep(prev) {
 }
 
 @keyframes timer-countdown {
-  from { inset: 3rem; } /* Starts small */
+  from { inset: 43%; } /* Starts at 14% visible (43% + 43% = 86% inset) */
   to { inset: 0; } /* Grows to full square */
 }
 ```
 
-**Design rationale:** Animation grows from small to large (rather than shrinking) so the colored border is always visible, especially important in triple mode where the letter circle needs to remain visible throughout.
+**Design rationale:**
+- Animation grows from small to large (rather than shrinking) so the colored border is always visible, especially important in triple mode where the letter circle needs to remain visible throughout
+- Uses percentage-based insets (43%) for consistent proportional scaling across all screen sizes
+- Desktop uses larger padding (6rem vs mobile's 3rem) to create a smaller inner area, making the animation more dramatic and visually similar to mobile
+- 43% inset leaves 14% visible at start, creating dramatic growth effect on both mobile and desktop
 
 **Interaction (IDLE state only):**
 - Click square N → Set BACK level to N+1
@@ -907,7 +911,8 @@ if (isPerfect) {
 ```css
 animation: timer-countdown var(--timer-duration) linear forwards;
 /* --timer-duration = 3s or 5s */
-/* Grows from small (inset: 3rem/3.5rem) to full square (inset: 0) */
+/* Grows from small (inset: 43%) to full square (inset: 0) */
+/* Percentage-based for consistent scaling across screen sizes */
 ```
 
 **Brain Pop:**
