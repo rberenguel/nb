@@ -125,7 +125,7 @@ function updateLevelDisplay() {
 
 // Level display click (start game)
 levelDisplay.addEventListener("click", () => {
-  if (active) return;
+  if (active || paused) return;
 
   // Medium haptic feedback on game start
   haptic(100);
