@@ -237,11 +237,14 @@ renderTimeout      // Number: Timeout ID for delayed rendering
 
 | From State | To State | Trigger | Action |
 |------------|----------|---------|--------|
+| IDLE | Instructions Modal | Click info icon | `showInstructions()` |
 | IDLE | STARTING | Click level display | `startGame()` |
 | STARTING | RUNNING-WARMUP | 1000ms timeout | `starting = false; nextRound()` |
 | RUNNING-WARMUP | RUNNING-ANSWERABLE | history.length > BACK | `canAnswer = true` |
 | RUNNING-ANSWERABLE | PAUSED | Click pause button | `togglePause()` |
-| PAUSED | RUNNING-WARMUP | Click pause button | `togglePause(); warmupRounds = BACK` |
+| PAUSED | Pause Stats Modal | Automatic | `showPauseStats()` |
+| Pause Stats Modal | RUNNING-WARMUP | Close modal | `resumeGame(); warmupRounds = BACK` |
+| PAUSED | IDLE | Click restart icon | `restartGame()` |
 | RUNNING-ANSWERABLE | END | total ≥ 100 | `endGame()` |
 | END | IDLE | Click modal | Modal closes |
 | RUNNING-ANSWERABLE | IDLE | - | User can select new level |
@@ -615,8 +618,14 @@ function flashButton(button, correct) {
 ```
 
 #### Round Display
-- Shows current round number (1-100) when answerable
-- Shows "—" during warmup periods
+- **IDLE state:** Shows info icon (Phosphor info \ue2ce)
+  - Clickable to show instructions modal
+  - Explains game rules and controls
+- **Active game:** Shows current round number (1-100) or "—" during warmup
+- **Paused:** Shows restart icon (Phosphor arrow-counter-clockwise \ue038)
+  - Clickable to restart game and return to IDLE state
+  - Preserves BACK level and dual/triple mode selection
+  - Resets all statistics and history
 - Font size: 1.5rem
 
 #### Level Display
@@ -656,7 +665,45 @@ function flashButton(button, correct) {
 - Particle fire effect overlay
 - Pop animation on perfect rounds
 
-### Modal (Results)
+### Modal System
+
+The game uses a single modal for multiple purposes:
+
+#### Instructions Modal
+
+**Trigger:** Click info icon (ⓘ) in round display on IDLE screen
+
+**Content:**
+- How to Play heading
+- Setup instructions (select level, toggle mode, start)
+- Playing instructions (position, color, letter controls)
+- Feedback explanations (green/red flashes, progress indicator)
+- Controls reference (touch, keyboard, pause, restart, resume)
+- Mobile-friendly formatting with clear sections
+
+**Styling:**
+- Custom scrollbar (webkit: dark thumb on light track, firefox: thin dark)
+- Scrollbar thumb has rounded corners and hover effect
+- Consistent with game's color scheme
+
+#### Pause Stats Modal
+
+**Trigger:** User pauses game (space key or center click)
+
+**Content:**
+- Current Session heading
+- Level and mode (e.g., "3-back (Dual)")
+- Progress: Rounds completed / 100
+- Overall accuracy percentage
+- Per-dimension stats with percentages
+
+**Behavior:**
+- Opens automatically when game is paused
+- Closing modal (Escape, Space, or click) automatically resumes game
+- Provides quick progress check without interrupting flow
+- Restart icon (↺) still available in round display
+
+#### Results Modal
 
 **Trigger:** Game ends after 100 rounds
 
@@ -866,6 +913,7 @@ Particles change color as they fade:
 | Perfect round | 200ms | Celebration |
 | Pause | 50ms | Light |
 | Resume | 100ms | Medium |
+| Restart (from pause) | 100ms | Medium |
 | Game end | 150ms | Strong |
 
 **Usage:**
@@ -1089,6 +1137,9 @@ function unrender(step) { ... }
 // 11. Button Handlers
 function toggleButton(button, type) { ... }
 function flashButton(button, correct) { ... }
+
+// 12. Keyboard Controls
+document.addEventListener("keydown", (e) => { ... });
 
 // 12. Stats Functions
 function updateStatsDisplay() { ... }

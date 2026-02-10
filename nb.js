@@ -16,6 +16,7 @@ let lastReply = { position: false, color: false, letter: false };
 let combo = -1;
 let starting = true;
 let paused = false;
+let pauseModalOpen = false; // Track if pause triggered the modal
 let nextRoundTimeout = null;
 let renderTimeout = null;
 let warmupRounds = 0;
@@ -42,7 +43,7 @@ const PROGRESS_ICON_SETS = [
       { threshold: 0.6, icon: "\ue7c2" }, // high
       { threshold: 0.8, icon: "\ue7c4" }, // full
     ],
-    fillRange: { bottom: 100, top: 0 }, // Battery is full height
+    fillRange: { bottom: 96, top: 0 }, // Battery starts at 96
   },
 ];
 
@@ -140,6 +141,11 @@ function startGame() {
   starting = true;
   resetEverything();
 
+  // Clear info icon from round display
+  roundDisplay.textContent = "";
+  roundDisplay.style.fontFamily = "";
+  roundDisplay.style.cursor = "";
+
   // Show buttons
   buttonLeft.classList.remove("hidden");
   buttonRight.classList.remove("hidden");
@@ -200,25 +206,51 @@ function togglePause() {
     levelDisplay.textContent = "\ue39e";
     levelDisplay.style.fontFamily = "Phosphor-Light";
     levelDisplay.style.opacity = "0.5";
+
+    // Show restart icon in round display
+    roundDisplay.textContent = "\ue038"; // arrow-counter-clockwise
+    roundDisplay.style.fontFamily = "Phosphor-Light";
+    roundDisplay.style.cursor = "pointer";
+    roundDisplay.style.opacity = "1";
+
+    // Show pause stats modal
+    pauseModalOpen = true;
+    showPauseStats();
   } else if (paused) {
     // Resume the game
-    paused = false;
-    active = true;
-
-    // Medium haptic on resume
-    haptic(100);
-
-    // Restore level display
-    updateLevelDisplay();
-    levelDisplay.style.opacity = "1";
-
-    // Start warmup period - need BACK rounds before accepting answers
-    warmupRounds = BACK;
-    lastRoundWasWarmup = true; // Treat as if coming from warmup
-
-    // Continue with next round
-    nextRound();
+    resumeGame();
   }
+}
+
+// Resume game from pause
+function resumeGame() {
+  paused = false;
+  active = true;
+  pauseModalOpen = false;
+
+  // Close modal if open
+  if (!modal.classList.contains("hidden")) {
+    modal.classList.add("hidden");
+  }
+
+  // Medium haptic on resume
+  haptic(100);
+
+  // Restore level display
+  updateLevelDisplay();
+  levelDisplay.style.opacity = "1";
+
+  // Restore round display
+  roundDisplay.style.fontFamily = "";
+  roundDisplay.style.cursor = "";
+  roundDisplay.style.opacity = "";
+
+  // Start warmup period - need BACK rounds before accepting answers
+  warmupRounds = BACK;
+  lastRoundWasWarmup = true; // Treat as if coming from warmup
+
+  // Continue with next round
+  nextRound();
 }
 
 // End game
@@ -258,14 +290,82 @@ function endGame() {
   updateLevelDisplay();
   levelDisplay.style.opacity = "1";
 
+  // Restore round display
+  roundDisplay.style.fontFamily = "";
+  roundDisplay.style.cursor = "";
+  roundDisplay.style.opacity = "";
+
   // Show results
   showResults();
+}
+
+// Restart game (return to IDLE state)
+function restartGame() {
+  if (!paused) return; // Only works during pause
+
+  // Clear pause state
+  paused = false;
+  active = false;
+
+  // Medium haptic on restart
+  haptic(100);
+
+  // Clear all timers
+  if (nextRoundTimeout) clearTimeout(nextRoundTimeout);
+  if (renderTimeout) clearTimeout(renderTimeout);
+
+  // Hide and reset buttons
+  buttonLeft.classList.add("hidden");
+  buttonLeft.classList.remove("pressed", "correct", "incorrect");
+  buttonRight.classList.add("hidden");
+  buttonRight.classList.remove("pressed", "correct", "incorrect");
+  buttonBottom.classList.add("hidden");
+  buttonBottom.classList.remove("pressed", "correct", "incorrect");
+  buttonPause.classList.add("hidden");
+
+  // Clear active states
+  squares.forEach((sq) => {
+    sq.classList.remove("active", "was-active");
+    sq.style.removeProperty("--active-color");
+    sq.style.removeProperty("--timer-duration");
+    const letterCircle = sq.querySelector(".letter-circle");
+    if (letterCircle) {
+      letterCircle.remove();
+    }
+  });
+
+  // Restore level display
+  updateLevelDisplay();
+  levelDisplay.style.opacity = "1";
+
+  // Restore round display
+  roundDisplay.textContent = "";
+  roundDisplay.style.fontFamily = "";
+  roundDisplay.style.cursor = "";
+  roundDisplay.style.opacity = "";
+
+  // Reset game state (but keep BACK and triple settings)
+  resetEverything();
+
+  // Show info icon again
+  updateRoundDisplay();
 }
 
 // Pause button
 buttonPause.addEventListener("mousedown", (e) => {
   e.preventDefault();
   togglePause();
+});
+
+// Round display click (restart during pause, info in idle)
+roundDisplay.addEventListener("click", (e) => {
+  if (paused) {
+    e.stopPropagation();
+    restartGame();
+  } else if (!active) {
+    e.stopPropagation();
+    showInstructions();
+  }
 });
 
 // Update button text visibility based on history length and warmup state
@@ -563,6 +663,72 @@ function updateBrainProgress() {
   progressText.textContent = `${total}/${maxRounds}`;
 }
 
+// Show pause stats modal
+function showPauseStats() {
+  if (total === 0) {
+    // No stats yet
+    return;
+  }
+
+  const pctPos = Math.round((100 * correctPosC) / total);
+  const pctCol = Math.round((100 * correctColC) / total);
+  const pctLet = triple ? Math.round((100 * correctLetC) / total) : 0;
+  const totalAnswers = triple ? total * 3 : total * 2;
+  const correctAnswers = triple
+    ? correctPosC + correctColC + correctLetC
+    : correctPosC + correctColC;
+  const overall = Math.round((correctAnswers / totalAnswers) * 100);
+
+  let html = `<h2>Current Session</h2>`;
+  html += `<p style="margin-top: 1rem;">Level: ${BACK}-back ${triple ? "(Triple)" : "(Dual)"}</p>`;
+  html += `<p>Rounds: ${total} / 100</p>`;
+  html += `<p>Overall: ${overall}%</p>`;
+  html += `<hr style="margin: 1rem 0;">`;
+  html += `<p>Position: ${correctPosC}/${total} (${pctPos}%)</p>`;
+  html += `<p>Color: ${correctColC}/${total} (${pctCol}%)</p>`;
+  if (triple) {
+    html += `<p>Letter: ${correctLetC}/${total} (${pctLet}%)</p>`;
+  }
+  html += `<p style="margin-top: 1.5rem; cursor: pointer; opacity: 0.7;" onclick="document.getElementById('modal').classList.add('hidden'); if(window.pauseModalOpen) window.resumeGame();">Tap to close and resume (or press Escape/Space)</p>`;
+
+  modalContent.innerHTML = html;
+  modal.classList.remove("hidden");
+}
+
+// Show instructions modal
+function showInstructions() {
+  let html = `<h2>How to Play</h2>`;
+  html += `<p style="margin-top: 1rem;"><strong>Dual N-Back</strong> is a memory training game. You must remember if the current position and color match what you saw <strong>N steps ago</strong>.</p>`;
+  html += `<hr style="margin: 1rem 0;">`;
+  html += `<h3 style="margin-top: 1rem;">Setup</h3>`;
+  html += `<p><strong>Select level:</strong> Click any square (1-9) to set N-back level</p>`;
+  html += `<p><strong>Toggle mode:</strong> Click the same square again to switch between Dual (2) and Triple (3) modes</p>`;
+  html += `<p><strong>Start:</strong> Click the level number at top</p>`;
+  html += `<hr style="margin: 1rem 0;">`;
+  html += `<h3 style="margin-top: 1rem;">Playing</h3>`;
+  html += `<p><strong>Position:</strong> Press left edge if position matches N steps ago</p>`;
+  html += `<p><strong>Color:</strong> Press right edge if color matches N steps ago</p>`;
+  html += `<p><strong>Letter (Triple):</strong> Press bottom if letter matches N steps ago</p>`;
+  html += `<p style="margin-top: 1rem;">Press again to toggle off. You can answer multiple dimensions per round.</p>`;
+  html += `<hr style="margin: 1rem 0;">`;
+  html += `<h3 style="margin-top: 1rem;">Feedback</h3>`;
+  html += `<p><strong>Green flash:</strong> Correct answer!</p>`;
+  html += `<p><strong>Red flash:</strong> Incorrect answer</p>`;
+  html += `<p><strong>Brain/battery fills:</strong> Your progress through 100 rounds</p>`;
+  html += `<hr style="margin: 1rem 0;">`;
+  html += `<h3 style="margin-top: 1rem;">Controls</h3>`;
+  html += `<p><strong>Touch:</strong> Press left/right/bottom edges</p>`;
+  html += `<p><strong>Keyboard:</strong> Z (position) / X (letter) / C (color)</p>`;
+  html += `<p><strong>Space:</strong> Start game / Pause / Resume</p>`;
+  html += `<p><strong>? key:</strong> Show this help</p>`;
+  html += `<p><strong>Escape:</strong> Close modal</p>`;
+  html += `<p><strong>Restart:</strong> Click restart icon (↺) when paused</p>`;
+  html += `<p style="margin-top: 1.5rem; cursor: pointer; opacity: 0.7;" onclick="document.getElementById('modal').classList.add('hidden')">Tap to close (or press Escape)</p>`;
+
+  modalContent.innerHTML = html;
+  modal.classList.remove("hidden");
+}
+
 // Show results modal
 function showResults() {
   const totalAnswers = triple ? total * 3 : total * 2;
@@ -621,6 +787,87 @@ function initProgressIcon() {
   brainFill.textContent = initialIcon;
 }
 
+// Update round display for IDLE/PAUSE states
+function updateRoundDisplay() {
+  if (!active && !paused) {
+    // IDLE state - show info icon
+    roundDisplay.textContent = "\ue2ce"; // info icon
+    roundDisplay.style.fontFamily = "Phosphor-Light";
+    roundDisplay.style.cursor = "pointer";
+    roundDisplay.style.opacity = "1";
+  } else if (!active) {
+    // Game ended or other non-active state - clear
+    roundDisplay.textContent = "";
+    roundDisplay.style.fontFamily = "";
+    roundDisplay.style.cursor = "";
+    roundDisplay.style.opacity = "";
+  }
+  // During active game, round display is managed by nextRound()
+}
+
+// Keyboard controls
+document.addEventListener("keydown", (e) => {
+  // Ignore if typing in an input
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+
+  const key = e.key.toLowerCase();
+
+  // Global shortcuts (work in any state)
+  if (key === "escape") {
+    // Dismiss modal and resume if in pause mode
+    if (!modal.classList.contains("hidden")) {
+      e.preventDefault();
+      modal.classList.add("hidden");
+
+      // If closing pause stats modal, resume game
+      if (pauseModalOpen && paused) {
+        resumeGame();
+      }
+    }
+    return;
+  }
+
+  if (key === "?" || key === "/") {
+    // Open info dialog (? or / for US keyboards where ? requires shift)
+    e.preventDefault();
+    showInstructions();
+    return;
+  }
+
+  if (key === " " || key === "spacebar") {
+    // Space: Start game / Pause / Resume
+    e.preventDefault();
+    if (!active && !paused) {
+      // IDLE state - start game
+      startGame();
+    } else if (active || paused) {
+      // Active or paused - toggle pause
+      togglePause();
+    }
+    return;
+  }
+
+  // Answer controls (only during active gameplay)
+  if (!active || paused || starting) return;
+
+  if (key === "z") {
+    // Position (left button)
+    e.preventDefault();
+    toggleButton(buttonLeft, "position");
+  } else if (key === "x") {
+    // Letter (bottom button) - only in triple mode
+    if (triple) {
+      e.preventDefault();
+      toggleButton(buttonBottom, "letter");
+    }
+  } else if (key === "c") {
+    // Color (right button)
+    e.preventDefault();
+    toggleButton(buttonRight, "color");
+  }
+});
+
 // Initialize
 initProgressIcon();
 updateLevelDisplay();
+updateRoundDisplay();
