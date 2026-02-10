@@ -102,6 +102,7 @@ const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "J"];
 
 // DOM elements
 const levelDisplay = document.getElementById("level-display");
+const fillup = document.getElementById("fillup");
 const roundDisplay = document.getElementById("round-display");
 const buttonLeft = document.getElementById("button-left");
 const buttonRight = document.getElementById("button-right");
@@ -157,8 +158,17 @@ function updateLevelDisplay() {
   levelDisplay.style.fontFamily = ""; // Reset to default font
 }
 
-// Level display click (start game)
+// Level display and fillup click (start game)
 levelDisplay.addEventListener("click", () => {
+  if (active || paused) return;
+
+  // Medium haptic feedback on game start
+  haptic(100);
+
+  startGame();
+});
+
+fillup.addEventListener("click", () => {
   if (active || paused) return;
 
   // Medium haptic feedback on game start
@@ -198,6 +208,8 @@ function startGame() {
 
 // Pause/Resume game
 function togglePause() {
+  paused = true
+  arstartarst
   if (starting) return;
 
   if (!paused && active) {

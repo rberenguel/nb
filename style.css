@@ -182,13 +182,18 @@ body {
 
 /* Grid container - centers the grid */
 #grid-container {
-  flex: 1;
+  /*flex: 1;*/
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
-  margin-top: -10rem;
+  margin-top: 5rem;
   position: relative;
+}
+
+#fillup {
+  width: 100%;
+  height: 100%;
 }
 
 /* 3x3 grid */
@@ -310,7 +315,7 @@ body {
   font-weight: 600;
   color: var(--active-color);
   z-index: 10;
-  box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.2);
+  /*box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.2);*/
 }
 
 /* Active square styling */
@@ -344,7 +349,7 @@ body {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 2rem;
+  width: 1.5rem;
   background-color: transparent;
   z-index: -1;
   transition: background-color 0.3s ease;
@@ -389,7 +394,7 @@ body {
 
 #button-left span {
   position: absolute;
-  left: 0.25rem;
+  left: 0.1rem;
 }
 
 #button-right {
@@ -400,7 +405,7 @@ body {
 
 #button-right span {
   position: absolute;
-  right: 0.25rem;
+  right: 0.1rem;
 }
 
 .side-button span {
@@ -409,7 +414,7 @@ body {
   letter-spacing: 0.15rem;
   opacity: 0;
   font-weight: 300;
-  padding: 0.5rem 0.25rem;
+  /*padding: 0.5rem 0.25rem;*/
   transition: opacity 0.3s ease;
 }
 
@@ -421,7 +426,7 @@ body {
   right: 25%;
   height: 15%;
   display: flex;
-  align-items: center;
+  align-items: end;
   justify-content: center;
   background-color: rgba(0, 0, 0, 0);
   cursor: pointer;
