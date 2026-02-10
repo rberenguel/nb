@@ -210,10 +210,10 @@ body {
 
 @keyframes timer-countdown {
   from {
-    inset: 0;
+    inset: 3rem;
   }
   to {
-    inset: 3rem;
+    inset: 0;
   }
 }
 
@@ -498,10 +498,10 @@ body {
 
   @keyframes timer-countdown {
     from {
-      inset: 0;
+      inset: 3.5rem;
     }
     to {
-      inset: 3.5rem;
+      inset: 0;
     }
   }
 

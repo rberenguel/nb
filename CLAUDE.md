@@ -517,10 +517,12 @@ function generateStep(prev) {
 }
 
 @keyframes timer-countdown {
-  from { inset: 0; }
-  to { inset: 3rem; } /* Border shrinks inward */
+  from { inset: 3rem; } /* Starts small */
+  to { inset: 0; } /* Grows to full square */
 }
 ```
+
+**Design rationale:** Animation grows from small to large (rather than shrinking) so the colored border is always visible, especially important in triple mode where the letter circle needs to remain visible throughout.
 
 **Interaction (IDLE state only):**
 - Click square N → Set BACK level to N+1
@@ -905,6 +907,7 @@ if (isPerfect) {
 ```css
 animation: timer-countdown var(--timer-duration) linear forwards;
 /* --timer-duration = 3s or 5s */
+/* Grows from small (inset: 3rem/3.5rem) to full square (inset: 0) */
 ```
 
 **Brain Pop:**
