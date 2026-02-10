@@ -590,6 +590,36 @@ body {
   font-family: "Monoid", monospace;
 }
 
+.modal-content p {
+  margin-top: 1rem;
+}
+
+.modal-content h3 {
+  margin-top: 1rem;
+}
+
+.modal-content hr {
+  margin: 1rem 0;
+  border: none;
+  border-top: 1px solid var(--text-color);
+}
+
+.modal-close-hint {
+  margin-top: 1.5rem;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+#results-suggestion {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+#history-list {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
 /* Custom scrollbar for modal */
 .modal-content::-webkit-scrollbar {
   width: 12px;

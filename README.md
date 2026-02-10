@@ -1,47 +1,70 @@
-# nb
+# <img src="icon.png" alt="NB Icon" width="32" height="32"> nb
 
-A very simple PWA for the [n-back task](https://en.wikipedia.org/wiki/N-back), visual-only.
-Has dual and triple modes.
+A visual-only PWA for the [n-back task](https://en.wikipedia.org/wiki/N-back) with dual and triple modes.
 
-A long time ago I found an app I liked for it, with only positions and letters. Most are
-position+audio, which I don't like. But that stopped working, so…
-[wrote my own](https://www.youtube.com/watch?v=ubPWaDWcOLU).
+Most n-back implementations use audio cues. This one uses only visual elements (position, color, and optionally letters), designed for focused cognitive training sessions.
 
-I have the feeling the `n`-back task is useful for focus. Otherwise, it was a neat side
-project to hack together in a couple afternoons.
+## Features
+
+- **Dual mode**: Track position and color
+- **Triple mode**: Track position, color, and letters
+- **Session tracking**: Achievement icons appear for each completed 100-round session (stored per day)
+- **Dual progress indicators**:
+  - Grey fill shows overall session progress
+  - Colorful gradient shows perfect round momentum (only increases when all dimensions are correct)
+- **Milestone celebrations**: Subtle fireworks at 20, 40, 60, and 80 rounds
+- **Keyboard support**: Full keyboard controls for desktop use
+- **Responsive design**: Works on mobile (portrait) and desktop
 
 ## Usage
 
-> [!IMPORTANT]
-> This will work best on a phone in portrait, it will look weird otherwise, particularly in triple-n-back mode. This is because the third mode button is designed to take the bottom of a portrait view. There is no explicit minimum width, but the screen should be reasonably wide (`600px` according to the simulator)
->
-> I will likely add keyboard shortcuts so it is playable on desktops and using a keyboard on iPad, which are _my_ landscape scenarios.
+### Setup
 
-To change the depth level press any of the squares (assume they are 1-9), the number in the top (the `n`-level)
-will change accordingly. Pressing the same square twice switches from dual to triple N-back.
+Click any square (1-9) to set the n-back level. Click the same square again to toggle between dual and triple modes. The level indicator at the top shows the current level and mode (e.g., "3₂" for 3-back dual mode).
 
-To start, tap the top, where the level appears. To pause while playing, press the middle or top. To dismiss the pause,
-tap the modal and then either choose a different level or just start normally. It will begin from "now" (so, no history),
-but will keep your current score. Your current stats will show in the upper right area, the amount of answers on the upper
-left area.
+### Starting and Pausing
 
-The answer buttons (details below) won't appear until an answer is expected. The answer buttons will briefly flash red or green depending on whether you were right or wrong.
+- **Start**: Click the level number at the top or anywhere in the bottom area
+- **Pause**: Click the center area during gameplay
+- **Resume**: Close the pause modal or press Space/Escape
 
-I have added auto-level advance, modelled after the one in [Brain Workshop](https://brainworkshop.sourceforge.net/details.html). After 20 rounds (which I call "a cycle" in the code) are played (20 answers, although I might be miscounting somewhere and they could be 21), if the % of correct answers for all categories is >= 80% the n-level is increased, if it's larger than 50% it stays the same and if lower, decreases. Maximum of 9 and minimum of 1, of course. Tapping the modal when the cycle ends starts a new one. If the level has changed, all stats are reset, but if the level is the same stats are kept: it makes it harder to increase the % and keep bouncing up and down the levels.
+Sessions run for 100 rounds (~5 minutes per session). Progress is shown in the top-right with a brain or battery icon.
 
-### Dual
+### Controls
 
-- You need to remember colors and positions.
-- If it's the same position as `n`-steps before, tap the left side, it will change color when selected. Press again to undo the answer.
-- If it's the same color as `n`-steps before, tap the right side, it will change color when selected. Press again to undo the answer.
+**Touch/Mouse:**
 
-### Triple
+- Left edge: Position matches n steps ago
+- Right edge: Color matches n steps ago
+- Bottom center (triple mode only): Letter matches n steps ago
 
-- You need to remember colors, positions and letters.
-- For position and color, controls are as in dual.
-- For letter, press the bottom (the letter button should take 50% of the bottom).
+**Keyboard:**
 
-## Tip(s)
+- `Z`: Position
+- `C`: Color
+- `X`: Letter (triple mode only)
+- `Space`: Start/Pause/Resume
+- `?`: Show help
+- `Escape`: Close modals
 
-- If you want to see all possible colors, visit the page with the URL ending in `?colors`.
-- You should be able to tweak the CSS to change the colors, backgrounds and that. I made it easier once I found out dark background (which I prefer) is hard on the eyes because the colors have high contrast.
+Press again to toggle answers off. Multiple dimensions can be selected per round.
+
+### Feedback
+
+- **Green flash**: Correct answer
+- **Red flash**: Incorrect answer
+- **Grey progress fill**: Overall session progress (0-100 rounds)
+- **Colorful fire fill**: Perfect round streak (increases only when all dimensions are correct)
+- **Fireworks**: Milestone celebrations at rounds 20, 40, 60, 80
+
+## Session Data
+
+Completed sessions (100 rounds) are tracked using IndexedDB. Achievement icons appear in the play area showing today's completed sessions. Icons are randomly selected from: star, medal, trophy, brain, graduation cap, lightning, and fist.
+
+## Technical Notes
+
+- Phosphor icons for UI elements
+- Canvas-based particle effects (fire and fireworks)
+- PWA-ready with service worker support
+- Haptic feedback on iOS devices
+- Monospace (Monoid) font for modals

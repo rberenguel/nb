@@ -757,11 +757,6 @@ function updateBrainProgress() {
 FireSystem.init();
 
 // Testing helpers for ES6 module console access
-window.testFire = (val) => {
-  total = val;
-  updateBrainProgress();
-};
-
 window.nb = {
   testStars: renderStars,
 };

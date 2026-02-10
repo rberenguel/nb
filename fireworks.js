@@ -50,8 +50,7 @@ const Fireworks = {
 
     for (let i = 0; i < particleCount; i++) {
       const angle = (i / particleCount) * Math.PI * 2;
-      const speed =
-        (Math.random() * 0.6 + 0.3) * this.config.SPEED_MULTIPLIER;
+      const speed = (Math.random() * 0.6 + 0.3) * this.config.SPEED_MULTIPLIER;
       this.particles.push({
         x,
         y,
