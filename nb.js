@@ -304,6 +304,7 @@ function render(step) {
 function unrender(step) {
   const square = squares[step.position];
   square.classList.remove("active");
+  square.classList.add("was-active"); // Add for shake animation
   square.style.removeProperty("--active-color");
   square.style.removeProperty("--timer-duration");
 
@@ -312,6 +313,11 @@ function unrender(step) {
   if (letterCircle) {
     letterCircle.remove();
   }
+
+  // Clean up was-active class after shake completes
+  setTimeout(() => {
+    square.classList.remove("was-active");
+  }, 200);
 }
 
 // Next round

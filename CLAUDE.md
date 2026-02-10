@@ -506,9 +506,14 @@ function generateStep(prev) {
 **States:**
 - **Idle:** Neutral background color (`var(--alternate-background)`)
 - **Active:**
-  - Border color animates inward (timer countdown)
+  - Border color animates from small to full (timer countdown)
   - Background shows active color
   - Letter circle appears (triple mode only)
+- **Was-active** (brief state after unrender):
+  - Applied when `.active` is removed
+  - Triggers shake animation (0.15s)
+  - Cleaned up after 200ms
+  - Creates "pop" feedback right as color fills up completely
 
 **Animation:** Timer countdown using CSS animation
 ```css
@@ -915,9 +920,34 @@ animation: timer-countdown var(--timer-duration) linear forwards;
 /* Percentage-based for consistent scaling across screen sizes */
 ```
 
+**Square Shake (game feel):**
+```css
+.square.was-active {
+  animation: shake 0.15s ease-in-out;
+}
+```
+
+**Implementation pattern:**
+1. When `unrender()` is called (timer complete), `.active` is removed and `.was-active` is added
+2. Shake animation triggers immediately on `.was-active` class
+3. After 200ms, `.was-active` is cleaned up via setTimeout
+4. This allows shake to play precisely when color fills up, even after `.active` removal
+
+**Benefits:**
+- Shake plays at exact moment of timer completion
+- No timing/delay calculations needed
+- Clean separation between active state and feedback state
+- Adds tactile "juice" to game interactions
+
 **Brain Pop:**
 ```css
 animation: brain-pop 0.6s ease-out;
+```
+
+**Square Shake:**
+```css
+animation: shake 0.15s ease-in-out;
+/* Triggered via .was-active class on unrender, plays precisely when timer completes */
 ```
 
 **Button Feedback:**
