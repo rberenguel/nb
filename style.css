@@ -193,7 +193,32 @@ body {
 
 #fillup {
   width: 100%;
-  height: 100%;
+  flex: 1;
+  position: relative;
+}
+
+/* Session stars container */
+#session-stars {
+  position: absolute;
+  top: 30%;
+  left: 0;
+  right: 0;
+  height: 3rem;
+  pointer-events: none;
+}
+
+.session-star {
+  position: absolute;
+  top: 0;
+  font-family: "Phosphor-Light";
+  font-size: 2rem;
+  color: var(--text-color);
+  opacity: 0.4;
+  transition: opacity 0.3s ease;
+}
+
+.session-star:hover {
+  opacity: 0.8;
 }
 
 /* 3x3 grid */

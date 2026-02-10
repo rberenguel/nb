@@ -58,6 +58,7 @@ async function addSession(stats) {
   });
 
   await saveSessions();
+  updateSessionStars(); // Update stars after saving
 }
 
 // Progress icon configurations
@@ -111,6 +112,7 @@ const buttonPause = document.getElementById("button-pause");
 const brainBase = document.querySelector(".brain-base");
 const brainFill = document.querySelector(".brain-fill");
 const progressText = document.querySelector(".progress-text");
+const sessionStars = document.getElementById("session-stars");
 
 // Initialize squares
 const squares = Array.from(document.querySelectorAll(".square"));
@@ -735,10 +737,14 @@ function updateBrainProgress() {
 // Initialize fire particle system
 FireSystem.init();
 
-// Testing helper for ES6 module console access
+// Testing helpers for ES6 module console access
 window.testFire = (val) => {
   total = val;
   updateBrainProgress();
+};
+
+window.nb = {
+  testStars: renderStars
 };
 
 // Initialize progress icon display
@@ -829,12 +835,48 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+// Session stars display
+function getTodaysSessions() {
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const endOfDay = startOfDay + 24 * 60 * 60 * 1000;
+
+  return sessions.filter(session =>
+    session.date >= startOfDay && session.date < endOfDay
+  ).length;
+}
+
+function renderStars(count) {
+  sessionStars.innerHTML = '';
+
+  if (count === 0) return;
+
+  // Calculate harmonic positions: distribute evenly with equal spacing
+  // For n stars, position i at: (i + 1) / (n + 1) * 100%
+  for (let i = 0; i < count; i++) {
+    const star = document.createElement('div');
+    star.className = 'session-star';
+    star.textContent = '\ue46a'; // Phosphor star icon
+
+    const position = ((i + 1) / (count + 1)) * 100;
+    star.style.left = `${position}%`;
+
+    sessionStars.appendChild(star);
+  }
+}
+
+function updateSessionStars() {
+  const todayCount = getTodaysSessions();
+  renderStars(todayCount);
+}
+
 // Initialize
 async function init() {
   await loadSessions();
   initProgressIcon();
   updateLevelDisplay();
   updateRoundDisplay();
+  updateSessionStars();
 }
 
 init();
