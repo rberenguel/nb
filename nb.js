@@ -3,6 +3,7 @@ import { haptic } from "./haptic.js";
 import { FireSystem } from "./fire.js";
 import { Fireworks } from "./fireworks.js";
 import * as Modals from "./modals.js";
+import { modal } from "./modals.js";
 import { get, set } from "./lib/idb-keyval.js";
 
 // Game state
@@ -181,6 +182,7 @@ function updateLevelDisplay() {
 // Level display and fillup click (start game)
 levelDisplay.addEventListener("click", () => {
   if (active || paused) return;
+  if (!modal.classList.contains("hidden")) return; // Don't start if modal is open
 
   // Medium haptic feedback on game start
   haptic(100);
@@ -190,6 +192,7 @@ levelDisplay.addEventListener("click", () => {
 
 fillup.addEventListener("click", () => {
   if (active || paused) return;
+  if (!modal.classList.contains("hidden")) return; // Don't start if modal is open
 
   // Medium haptic feedback on game start
   haptic(100);
@@ -369,6 +372,7 @@ async function endGame() {
       correctPosC,
       correctColC,
       correctLetC,
+      roundResults,
     });
   }
 
@@ -937,8 +941,10 @@ document.addEventListener("keydown", (e) => {
     // Space: Start game / Pause / Resume
     e.preventDefault();
     if (!active && !paused) {
-      // IDLE state - start game
-      startGame();
+      // IDLE state - start game (only if no modal is open)
+      if (modal.classList.contains("hidden")) {
+        startGame();
+      }
     } else if (active || paused) {
       // Active or paused - toggle pause
       togglePause();

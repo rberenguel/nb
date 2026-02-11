@@ -50,11 +50,13 @@ For each finding, ask: "Keep, remove, or fix?"
 
 ## 4. Final Verification
 
-Quick checks:
+**Only perform if new files were created this session.**
 
-- All files in `sw.js` CACHE_FILES exist
-- No broken imports
-- All referenced fonts/icons exist
+If new files were added:
+
+- Run `go run get_cache.go` to verify all dependencies are discovered
+- Compare output with current `sw.js` CACHE_FILES
+- Report any missing files that should be cached
 
 ## 5. Summary
 
