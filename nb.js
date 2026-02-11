@@ -782,9 +782,99 @@ function updateBrainProgress() {
 // Initialize fire particle system
 FireSystem.init();
 
+// Generate fake session data for testing
+async function generateFakeHistory(days = 30) {
+  const fakeSessions = [];
+  const now = Date.now();
+
+  for (let i = 0; i < days; i++) {
+    // Random number of sessions per day (0-4, weighted toward 1-2)
+    const sessionCount =
+      Math.random() < 0.3 ? 0 : Math.floor(Math.random() * 4) + 1;
+
+    for (let j = 0; j < sessionCount; j++) {
+      // Random time during the day
+      const dayStart = now - i * 24 * 60 * 60 * 1000;
+      const randomTime = dayStart - Math.random() * 24 * 60 * 60 * 1000;
+
+      // Random level (weighted toward 2-4)
+      const level = Math.floor(Math.random() * 9) + 1;
+      const weights = [0.05, 0.1, 0.2, 0.25, 0.2, 0.1, 0.05, 0.03, 0.02];
+      let randomLevel = 1;
+      const rand = Math.random();
+      let cumulative = 0;
+      for (let k = 0; k < weights.length; k++) {
+        cumulative += weights[k];
+        if (rand < cumulative) {
+          randomLevel = k + 1;
+          break;
+        }
+      }
+
+      // Random mode (70% dual, 30% triple)
+      const triple = Math.random() < 0.3;
+
+      // Random performance (weighted toward 60-85%)
+      const basePct = 50 + Math.random() * 40; // 50-90%
+      const pctPos = Math.min(
+        100,
+        Math.max(0, basePct + (Math.random() - 0.5) * 20),
+      );
+      const pctCol = Math.min(
+        100,
+        Math.max(0, basePct + (Math.random() - 0.5) * 20),
+      );
+      const pctLet = triple
+        ? Math.min(100, Math.max(0, basePct + (Math.random() - 0.5) * 20))
+        : null;
+
+      // Generate fake round results
+      const roundResults = [];
+      for (let r = 0; r < 100; r++) {
+        let val = 0;
+        if (Math.random() * 100 < pctPos) val |= 1;
+        if (Math.random() * 100 < pctCol) val |= 2;
+        if (triple && Math.random() * 100 < pctLet) val |= 4;
+        roundResults.push(val);
+      }
+
+      fakeSessions.push({
+        level: randomLevel,
+        triple,
+        pctPos,
+        pctCol,
+        pctLet,
+        date: randomTime,
+        roundResults,
+      });
+    }
+  }
+
+  // Merge with existing sessions and save
+  await loadSessions();
+  sessions.push(...fakeSessions);
+  await saveSessions();
+  updateSessionStars();
+
+  console.info(
+    `Generated ${fakeSessions.length} fake sessions across ${days} days`,
+  );
+  return fakeSessions.length;
+}
+
+// Clear all session history
+async function clearHistory() {
+  sessions = [];
+  await saveSessions();
+  updateSessionStars();
+  console.info("History cleared");
+}
+
 // Testing helpers for ES6 module console access
 window.nb = {
   testStars: renderStars,
+  generateFakeHistory,
+  clearHistory,
 };
 
 // Initialize progress icon display

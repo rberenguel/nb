@@ -67,6 +67,31 @@ Completed sessions (100 rounds) are tracked using IndexedDB. Achievement icons a
 
 Session data includes per-round correctness results (stored compactly for future analysis) which power the progress grid visualization.
 
+## Training Calendar
+
+Click the brain/battery progress icon (when not playing) to view your training history in a calendar format.
+
+**Calendar Features:**
+
+- Monthly calendar view (European format: starts on Monday)
+- Days with sessions are highlighted in green with session count
+- Navigate between months using arrow buttons
+- Click any day to see detailed session list with mini progress grid previews
+- Each session shows: level, mode, time (24-hour format), and performance percentages
+
+**Session Details:**
+
+- Click any session card to view full statistics and complete progress grid
+- Compact date format (YYYYMMDD @ HH:MM) for easy scanning
+- Back button returns to calendar view
+
+**Export Data:**
+
+- Floppy disk icon in calendar view exports all session data as JSON
+- Filename includes timestamp (e.g., `nb-2026-02-11T12-34-56.json`)
+- Uses Web Share API on supported devices, downloads otherwise
+- Useful for backup or external analysis
+
 ## Technical Notes
 
 - Phosphor icons for UI elements

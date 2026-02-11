@@ -1,6 +1,62 @@
 // Modal management module
 
 /**
+ * Decode round results from compact storage format
+ * @param {Array} encodedResults - Array of encoded numbers (0-7)
+ * @returns {Array} Array of {position, color, letter} objects
+ */
+function decodeRoundResults(encodedResults) {
+  if (!encodedResults) return [];
+  return encodedResults.map((val) => ({
+    position: (val & 1) !== 0,
+    color: (val & 2) !== 0,
+    letter: (val & 4) !== 0,
+  }));
+}
+
+/**
+ * Render mini progress grid as inline preview (20x20 pixels)
+ * @param {Array} encodedResults - Array of encoded numbers
+ * @param {boolean} triple - Whether triple mode
+ * @returns {string} HTML string for the mini grid
+ */
+function renderMiniProgressGrid(encodedResults, triple) {
+  if (!encodedResults || encodedResults.length === 0) {
+    return '<div class="mini-grid-placeholder"></div>';
+  }
+
+  const roundResults = decodeRoundResults(encodedResults);
+
+  let html = '<div class="mini-progress-grid">';
+
+  for (let i = 0; i < 100; i++) {
+    const result = roundResults[i];
+    if (!result) {
+      html += '<div class="mini-cell empty"></div>';
+    } else {
+      const allCorrect =
+        result.position && result.color && (!triple || result.letter);
+      const anyCorrect =
+        result.position || result.color || (triple && result.letter);
+
+      let cellClass = "mini-cell";
+      if (allCorrect) {
+        cellClass += " all-correct";
+      } else if (anyCorrect) {
+        cellClass += " partial";
+      } else {
+        cellClass += " incorrect";
+      }
+
+      html += `<div class="${cellClass}"></div>`;
+    }
+  }
+
+  html += "</div>";
+  return html;
+}
+
+/**
  * Render 10x10 progress grid showing per-round correctness
  * @param {Array} roundResults - Array of {position, color, letter} objects
  * @param {boolean} triple - Whether triple mode
@@ -59,10 +115,12 @@ const modalInstructions = document.getElementById("modal-instructions");
 const modalPause = document.getElementById("modal-pause");
 const modalResults = document.getElementById("modal-results");
 const modalHistory = document.getElementById("modal-history");
+const modalSessionDetail = document.getElementById("modal-session-detail");
 
 // Track which modal is currently open
 let currentModal = null;
 let onCloseCallback = null;
+let calendarSessions = []; // Store sessions for back navigation
 
 /**
  * Hide all modals and the overlay
@@ -73,6 +131,7 @@ export function hideModal() {
   modalPause.classList.add("hidden");
   modalResults.classList.add("hidden");
   modalHistory.classList.add("hidden");
+  modalSessionDetail.classList.add("hidden");
 
   // Call the close callback if one was set
   if (onCloseCallback) {
@@ -93,6 +152,7 @@ function showModal(modalElement, closeCallback = null) {
   modalPause.classList.add("hidden");
   modalResults.classList.add("hidden");
   modalHistory.classList.add("hidden");
+  modalSessionDetail.classList.add("hidden");
 
   // Show the requested modal
   modalElement.classList.remove("hidden");
@@ -225,59 +285,325 @@ export function showResults(stats) {
   showModal(modalResults);
 }
 
+// Track current month being viewed
+let currentViewDate = new Date();
+
 /**
- * Show history modal
+ * Export sessions data as JSON file
+ * @param {Array} sessions - Array of session objects
+ */
+async function exportSessions(sessions) {
+  const jsonData = JSON.stringify(sessions, null, 2);
+  const blob = new Blob([jsonData], { type: "application/json" });
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const filename = `nb-${timestamp}.json`;
+
+  // Try Web Share API first (if available and supports files)
+  if (navigator.share && navigator.canShare) {
+    try {
+      const file = new File([blob], filename, { type: "application/json" });
+      const shareData = { files: [file], title: "N-Back Session Data" };
+
+      if (navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+        console.info("Shared successfully");
+        return;
+      }
+    } catch (err) {
+      console.info("Web Share API failed, falling back to download:", err);
+    }
+  }
+
+  // Fallback: trigger download
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  console.info("Downloaded:", filename);
+}
+
+/**
+ * Show history modal with calendar view
  * @param {Array} sessions - Array of session objects
  */
 export function showHistory(sessions) {
+  currentViewDate = new Date(); // Reset to current month
+  calendarSessions = sessions; // Store for back navigation
+  renderCalendar(sessions);
+  showModal(modalHistory);
+}
+
+/**
+ * Render calendar view
+ * @param {Array} sessions - Array of session objects
+ */
+function renderCalendar(sessions) {
   const historyList = document.getElementById("history-list");
 
   if (!sessions || sessions.length === 0) {
     historyList.innerHTML =
       '<p style="opacity: 0.7; text-align: center;">No completed sessions yet.</p>';
-  } else {
-    // Sort by date (most recent first)
-    const sortedSessions = [...sessions].sort((a, b) => b.date - a.date);
+    return;
+  }
 
-    let html = "";
-    sortedSessions.forEach((session, index) => {
-      const date = new Date(session.date);
-      const dateStr = date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-      const timeStr = date.toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-      });
+  // Group sessions by date
+  const sessionsByDate = {};
+  sessions.forEach((session) => {
+    const date = new Date(session.date);
+    const dateKey = `${date.getFullYear()}-${String(date.getMonth()).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    if (!sessionsByDate[dateKey]) {
+      sessionsByDate[dateKey] = [];
+    }
+    sessionsByDate[dateKey].push(session);
+  });
 
-      const mode = session.triple ? "Triple" : "Dual";
-      const pctPos = Math.round(session.pctPos);
-      const pctCol = Math.round(session.pctCol);
-      const pctLet = session.triple ? Math.round(session.pctLet) : null;
+  // Get calendar data
+  const year = currentViewDate.getFullYear();
+  const month = currentViewDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const daysInMonth = lastDay.getDate();
 
-      html += `
-        <div style="padding: 0.75rem; margin-bottom: 0.75rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; background: rgba(255,255,255,0.02);">
-          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
-            <strong>${session.level}-back ${mode}</strong>
-            <span style="font-size: 0.75rem; opacity: 0.6;">${dateStr} ${timeStr}</span>
-          </div>
-          <div style="font-size: 0.85rem; opacity: 0.9;">
-            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+  // Convert Sunday-based (0-6) to Monday-based (0-6 where 0=Monday)
+  let startingDayOfWeek = firstDay.getDay() - 1;
+  if (startingDayOfWeek === -1) startingDayOfWeek = 6; // Sunday becomes 6
+
+  // Month name
+  const monthName = currentViewDate.toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
+
+  let html = `
+    <div class="calendar-header">
+      <button class="calendar-nav" id="prev-month">&larr;</button>
+      <h3>${monthName}</h3>
+      <button class="calendar-nav" id="next-month">&rarr;</button>
+    </div>
+    <div class="calendar-grid">
+      <div class="calendar-day-header">Mon</div>
+      <div class="calendar-day-header">Tue</div>
+      <div class="calendar-day-header">Wed</div>
+      <div class="calendar-day-header">Thu</div>
+      <div class="calendar-day-header">Fri</div>
+      <div class="calendar-day-header">Sat</div>
+      <div class="calendar-day-header">Sun</div>
+  `;
+
+  // Empty cells before first day
+  for (let i = 0; i < startingDayOfWeek; i++) {
+    html += '<div class="calendar-day empty"></div>';
+  }
+
+  // Days of month
+  const today = new Date();
+  const isCurrentMonth =
+    today.getFullYear() === year && today.getMonth() === month;
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateKey = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const daySessions = sessionsByDate[dateKey] || [];
+    const sessionCount = daySessions.length;
+
+    const isToday = isCurrentMonth && today.getDate() === day;
+    const hasData = sessionCount > 0;
+
+    let classes = "calendar-day";
+    if (isToday) classes += " today";
+    if (hasData) classes += " has-sessions";
+
+    html += `
+      <div class="${classes}" data-date="${dateKey}">
+        <div class="calendar-day-number">${day}</div>
+        ${sessionCount > 0 ? `<div class="session-indicator">${sessionCount}</div>` : ""}
+      </div>
+    `;
+  }
+
+  html += "</div>";
+
+  // Details section (hidden initially)
+  html += '<div id="day-details" class="day-details hidden"></div>';
+
+  historyList.innerHTML = html;
+
+  // Attach event listeners
+  document.getElementById("prev-month")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    currentViewDate.setMonth(currentViewDate.getMonth() - 1);
+    renderCalendar(sessions);
+  });
+
+  document.getElementById("next-month")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    currentViewDate.setMonth(currentViewDate.getMonth() + 1);
+    renderCalendar(sessions);
+  });
+
+  // Day click handlers
+  document.querySelectorAll(".calendar-day.has-sessions").forEach((dayEl) => {
+    dayEl.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const dateKey = dayEl.dataset.date;
+      const daySessions = sessionsByDate[dateKey] || [];
+      showDayDetails(dateKey, daySessions);
+    });
+  });
+}
+
+/**
+ * Show details for a specific day
+ * @param {string} dateKey - Date key (YYYY-MM-DD)
+ * @param {Array} daySessions - Sessions for this day
+ */
+function showDayDetails(dateKey, daySessions) {
+  const detailsEl = document.getElementById("day-details");
+  if (!detailsEl) return;
+
+  const date = new Date(dateKey + "T12:00:00"); // Use noon to avoid timezone issues
+
+  // Format as YYYYMMDD
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const dateStr = `${year}${month}${day}`;
+
+  // Sort sessions by time
+  const sortedSessions = [...daySessions].sort((a, b) => a.date - b.date);
+
+  let html = `
+    <div class="day-details-header">
+      <h3>${dateStr}</h3>
+      <button class="close-details" id="close-details">×</button>
+    </div>
+    <div class="day-sessions">
+  `;
+
+  sortedSessions.forEach((session, index) => {
+    const time = new Date(session.date);
+
+    // Format as HH:MM (24-hour)
+    const hours = String(time.getHours()).padStart(2, "0");
+    const minutes = String(time.getMinutes()).padStart(2, "0");
+    const timeStr = `${hours}:${minutes}`;
+
+    const mode = session.triple ? "Triple" : "Dual";
+    const pctPos = Math.round(session.pctPos);
+    const pctCol = Math.round(session.pctCol);
+    const pctLet = session.triple ? Math.round(session.pctLet) : null;
+
+    const miniGrid = renderMiniProgressGrid(
+      session.roundResults,
+      session.triple,
+    );
+
+    html += `
+      <div class="session-card" data-session-index="${index}">
+        <div class="session-content">
+          <div class="session-info">
+            <div class="session-header">
+              <strong>${session.level}-back ${mode}</strong>
+              <span class="session-time">${timeStr}</span>
+            </div>
+            <div class="session-stats">
               <span>Pos: ${pctPos}%</span>
               <span>Col: ${pctCol}%</span>
               ${pctLet !== null ? `<span>Let: ${pctLet}%</span>` : ""}
             </div>
           </div>
+          ${miniGrid}
         </div>
-      `;
-    });
+      </div>
+    `;
+  });
 
-    historyList.innerHTML = html;
+  html += "</div>";
+
+  detailsEl.innerHTML = html;
+  detailsEl.classList.remove("hidden");
+
+  // Close button handler
+  document.getElementById("close-details")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    detailsEl.classList.add("hidden");
+  });
+
+  // Session card click handlers
+  document.querySelectorAll(".session-card").forEach((card) => {
+    card.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const sessionIndex = parseInt(card.dataset.sessionIndex);
+      const session = sortedSessions[sessionIndex];
+      showSessionDetail(session);
+    });
+  });
+}
+
+/**
+ * Show detailed view of a single session
+ * @param {Object} session - Session object
+ */
+function showSessionDetail(session) {
+  const date = new Date(session.date);
+
+  // Format as YYYYMMDD @ HH:MM (Day)
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
+
+  const dateStr = `${year}${month}${day} @ ${hours}:${minutes} (${dayName})`;
+
+  const mode = session.triple ? "Triple" : "Dual";
+  const pctPos = Math.round(session.pctPos);
+  const pctCol = Math.round(session.pctCol);
+  const pctLet = session.triple ? Math.round(session.pctLet) : null;
+
+  // Calculate overall percentage
+  const totalAnswers = session.triple ? 300 : 200;
+  const correctAnswers = session.triple
+    ? session.pctPos + session.pctCol + session.pctLet
+    : session.pctPos + session.pctCol;
+  const overall = Math.round(correctAnswers / (session.triple ? 3 : 2));
+
+  // Decode round results for the progress grid
+  const roundResults = decodeRoundResults(session.roundResults);
+
+  // Update modal content
+  document.getElementById("session-detail-date").textContent = dateStr;
+  document.getElementById("session-detail-level").textContent =
+    `Level: ${session.level}-back ${mode}`;
+  document.getElementById("session-detail-overall").textContent =
+    `Overall: ${overall}%`;
+  document.getElementById("session-detail-position").textContent =
+    `Position: ${pctPos}%`;
+  document.getElementById("session-detail-color").textContent =
+    `Color: ${pctCol}%`;
+
+  const sessionDetailLetter = document.getElementById("session-detail-letter");
+  if (session.triple) {
+    sessionDetailLetter.textContent = `Letter: ${pctLet}%`;
+    sessionDetailLetter.classList.remove("hidden");
+  } else {
+    sessionDetailLetter.classList.add("hidden");
   }
 
-  showModal(modalHistory);
+  // Add progress grid visualization
+  const sessionDetailGrid = document.getElementById("session-detail-grid");
+  if (sessionDetailGrid) {
+    sessionDetailGrid.innerHTML = renderProgressGrid(
+      roundResults,
+      session.triple,
+    );
+  }
+
+  showModal(modalSessionDetail);
 }
 
 // Set up global click handler for modal dismissal
@@ -311,6 +637,31 @@ modalResults.addEventListener("click", (e) => {
 modalHistory.addEventListener("click", (e) => {
   if (e.target.classList.contains("modal-close-hint")) {
     hideModal();
+  }
+
+  // Export sessions button
+  if (e.target.id === "export-sessions") {
+    e.stopPropagation();
+    exportSessions(calendarSessions);
+  }
+});
+
+// Session detail modal can be dismissed by clicking the close hint
+modalSessionDetail.addEventListener("click", (e) => {
+  if (e.target.classList.contains("modal-close-hint")) {
+    hideModal();
+  }
+});
+
+// Back button handler for session detail modal
+// Use event delegation since button is inside modal
+modalSessionDetail.addEventListener("click", (e) => {
+  if (e.target.id === "back-to-calendar") {
+    e.stopPropagation();
+    // Close session detail and return to calendar
+    modalSessionDetail.classList.add("hidden");
+    modalHistory.classList.remove("hidden");
+    renderCalendar(calendarSessions); // Re-render calendar to restore state
   }
 });
 

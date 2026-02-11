@@ -138,6 +138,10 @@
           <strong>Colorful fire fill:</strong> Perfect round streak (only
           increases when all dimensions correct)
         </p>
+        <p>
+          <strong>Click progress icon:</strong> View training calendar (when not
+          playing)
+        </p>
         <hr />
         <h3>Daily Sessions</h3>
         <p>
@@ -156,7 +160,7 @@
         <p><strong>? key:</strong> Show this help</p>
         <p><strong>Escape:</strong> Close any modal</p>
         <p><strong>Restart:</strong> Click restart icon (↺) when paused</p>
-        <p class="modal-close-hint">Tap to close (or press Escape)</p>
+        <button class="modal-icon-button modal-close-hint">&#xe4f6;</button>
       </div>
 
       <!-- Pause stats modal -->
@@ -171,9 +175,7 @@
         <p id="pause-letter" class="hidden">Letter: 35/42 (83%)</p>
         <hr />
         <div id="pause-grid"></div>
-        <p class="modal-close-hint">
-          Tap to close and resume (or press Escape/Space)
-        </p>
+        <button class="modal-icon-button modal-close-hint">&#xe4f6;</button>
       </div>
 
       <!-- Results modal -->
@@ -189,16 +191,45 @@
         <hr />
         <div id="results-grid"></div>
         <p id="results-suggestion">Consider advancing to a higher level</p>
-        <p class="modal-close-hint">Tap to close</p>
+        <button class="modal-icon-button modal-close-hint">&#xe4f6;</button>
       </div>
 
       <!-- History modal -->
       <div id="modal-history" class="modal-content hidden">
-        <h2>Session History</h2>
+        <h2>Training Calendar</h2>
         <div id="history-list">
           <!-- Will be populated dynamically -->
         </div>
-        <p class="modal-close-hint">Tap to close</p>
+        <div class="modal-buttons">
+          <button
+            class="modal-icon-button"
+            id="export-sessions"
+            title="Export session data"
+          >
+            &#xe248;
+          </button>
+          <button class="modal-icon-button modal-close-hint">&#xe4f6;</button>
+        </div>
+      </div>
+
+      <!-- Session detail modal -->
+      <div id="modal-session-detail" class="modal-content hidden">
+        <h2>Session Details</h2>
+        <p id="session-detail-date"></p>
+        <p id="session-detail-level"></p>
+        <p id="session-detail-overall"></p>
+        <hr />
+        <p id="session-detail-position"></p>
+        <p id="session-detail-color"></p>
+        <p id="session-detail-letter" class="hidden"></p>
+        <hr />
+        <div id="session-detail-grid"></div>
+        <div class="modal-buttons">
+          <button class="modal-icon-button" id="back-to-calendar">
+            &#xe5a4;
+          </button>
+          <button class="modal-icon-button modal-close-hint">&#xe4f6;</button>
+        </div>
       </div>
     </div>
 

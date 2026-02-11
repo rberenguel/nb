@@ -1,4 +1,4 @@
-const CACHE_NAME = "nb-cache-v0.5.1";
+const CACHE_NAME = "nb-cache-v0.6.0";
 const CACHE_FILES = [
   "./fire.js",
   "./fireworks.js",
@@ -30,7 +30,7 @@ self.addEventListener("install", (event) => {
       return cache
         .addAll(CACHE_FILES)
         .then(() => {
-          console.log("All files cached successfully.");
+          console.info("All files cached successfully.");
           // Activate immediately, don't wait for tabs to close
           return self.skipWaiting();
         })

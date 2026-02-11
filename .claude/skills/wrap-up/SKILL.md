@@ -39,10 +39,11 @@ Show changes clearly.
 
 Search for and report:
 
-- `console.log` statements (Grep)
+- `console.log` statements (Grep) - suggest changing to `console.info` for non-errors
 - `TODO`, `FIXME`, `HACK` comments (Grep)
 - Unused imports in JS files
 - Test functions like `window.nb.testStars`
+  - **Note:** `window.nb` test functions (testStars, generateFakeHistory, clearHistory) should ALWAYS be kept - they're intentional debug/testing utilities
 - Commented-out code blocks
 
 For each finding, ask: "Keep, remove, or fix?"
