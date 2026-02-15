@@ -8,6 +8,7 @@ Most n-back implementations use audio cues. This one uses only visual elements (
 
 - **Dual mode**: Track position and color
 - **Triple mode**: Track position, color, and letters
+- **Quad mode**: Track position, color, letters, and shapes (using `clip-path`)
 - **Session tracking**: Achievement icons appear for each completed 100-round session (stored per day)
 - **Dual progress indicators**:
   - Grey fill shows overall session progress
@@ -20,7 +21,7 @@ Most n-back implementations use audio cues. This one uses only visual elements (
 
 ### Setup
 
-Click any square (1-9) to set the n-back level. Click the same square again to toggle between dual and triple modes. The level indicator at the top shows the current level and mode (e.g., "3₂" for 3-back dual mode).
+Click any square (1-9) to set the n-back level. Click the same square again to cycle between **Dual**, **Triple**, and **Quad** modes. The level indicator at the top shows the current level and mode (e.g., "3₄" for 3-back quad mode).
 
 ### Starting and Pausing
 
@@ -36,13 +37,17 @@ Sessions run for 100 rounds (~5 minutes per session). Progress is shown in the t
 
 - Left edge: Position matches n steps ago
 - Right edge: Color matches n steps ago
-- Bottom center (triple mode only): Letter matches n steps ago
+- Bottom center (triple mode): Letter matches n steps ago
+- Bottom split buttons (quad mode):
+  - Left: Letter matches n steps ago
+  - Right: Shape matches n steps ago
 
 **Keyboard:**
 
 - `Z`: Position
 - `C`: Color
-- `X`: Letter (triple mode only)
+- `X`: Letter (triple/quad mode)
+- `V`: Shape (quad mode)
 - `Space`: Start/Pause/Resume
 - `?`: Show help
 - `Escape`: Close modals
@@ -57,7 +62,7 @@ Press again to toggle answers off. Multiple dimensions can be selected per round
 - **Colorful fire fill**: Perfect round streak (increases only when all dimensions are correct)
 - **Fireworks**: Milestone celebrations at rounds 20, 40, 60, 80
 - **Progress grid**: 10×10 matrix in pause/results modals showing per-round correctness
-  - Each cell represents one round, split into horizontal bars (position/color/letter)
+  - Each cell represents one round, split into horizontal bars (position/color/letter/shape)
   - Green bars = correct, red bars = incorrect
   - Makes failure clusters and patterns immediately visible
 

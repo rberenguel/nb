@@ -9,15 +9,22 @@ import { get, set } from "./lib/idb-keyval.js";
 // Game state
 let BACK = 1;
 let triple = false;
+let quad = false;
 let history = [];
 let correctPosC = 0;
 let correctColC = 0;
 let correctLetC = 0;
+let correctShapeC = 0;
 let total = 0;
 let perfectRounds = 0; // Track perfect rounds for fire gradient
 let roundResults = []; // Track per-round correctness for visualization
 let active = false;
-let lastReply = { position: false, color: false, letter: false };
+let lastReply = {
+  position: false,
+  color: false,
+  letter: false,
+  shape: false,
+};
 let combo = -1;
 let starting = true;
 let paused = false;
@@ -29,7 +36,7 @@ let lastRoundWasWarmup = true; // Track if previous round was warmup
 // Session history
 let sessions = [];
 
-const TOTAL_TIME = () => (triple ? 5000 : 3000);
+const TOTAL_TIME = () => (quad ? 5000 : triple ? 4000 : 3000);
 const RESET_TIME = () => 300;
 
 // Session storage functions
@@ -49,15 +56,20 @@ async function addSession(stats) {
     stats.triple && stats.total > 0
       ? (stats.correctLetC / stats.total) * 100
       : 0;
+  const pctShape =
+    stats.quad && stats.total > 0
+      ? (stats.correctShapeC / stats.total) * 100
+      : 0;
 
-  // Encode round results compactly: each round as a number 0-7 (3 bits)
-  // Bit 0: position, Bit 1: color, Bit 2: letter
+  // Encode round results compactly: each round as a number 0-15 (4 bits)
+  // Bit 0: position, Bit 1: color, Bit 2: letter, Bit 3: shape
   const encodedResults = stats.roundResults
     ? stats.roundResults.map((r) => {
         let val = 0;
         if (r.position) val |= 1;
         if (r.color) val |= 2;
         if (r.letter) val |= 4;
+        if (r.shape) val |= 8;
         return val;
       })
     : [];
@@ -65,9 +77,11 @@ async function addSession(stats) {
   sessions.push({
     level: stats.BACK,
     triple: stats.triple,
+    quad: stats.quad,
     pctPos,
     pctCol,
     pctLet: stats.triple ? pctLet : null,
+    pctShape: stats.quad ? pctShape : null,
     date: Date.now(),
     roundResults: encodedResults, // Store compact round-by-round results
   });
@@ -115,6 +129,7 @@ const colors = [
 ];
 
 const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "J"];
+const shapeIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
 // DOM elements
 const levelDisplay = document.getElementById("level-display");
@@ -123,6 +138,8 @@ const roundDisplay = document.getElementById("round-display");
 const buttonLeft = document.getElementById("button-left");
 const buttonRight = document.getElementById("button-right");
 const buttonBottom = document.getElementById("button-bottom");
+const buttonBottomLeft = document.getElementById("button-bottom-left");
+const buttonBottomRight = document.getElementById("button-bottom-right");
 const buttonPause = document.getElementById("button-pause");
 const brainBase = document.querySelector(".brain-base");
 const brainFill = document.querySelector(".brain-fill");
@@ -136,7 +153,7 @@ const squares = Array.from(document.querySelectorAll(".square"));
 
 // Reset functions
 function resetReply() {
-  lastReply = { position: false, color: false, letter: false };
+  lastReply = { position: false, color: false, letter: false, shape: false };
 }
 
 function resetEverything() {
@@ -144,6 +161,7 @@ function resetEverything() {
   correctPosC = 0;
   correctLetC = 0;
   correctColC = 0;
+  correctShapeC = 0;
   combo = -1;
   total = 0;
   perfectRounds = 0;
@@ -163,7 +181,17 @@ squares.forEach((square, idx) => {
 
     const newBack = idx + 1;
     if (BACK === newBack) {
-      triple = !triple;
+      // Cycle: Dual -> Triple -> Quad -> Dual
+      if (!triple && !quad) {
+        triple = true;
+        quad = false;
+      } else if (triple && !quad) {
+        triple = true;
+        quad = true;
+      } else {
+        triple = false;
+        quad = false;
+      }
     }
     BACK = newBack;
 
@@ -174,7 +202,7 @@ squares.forEach((square, idx) => {
 });
 
 function updateLevelDisplay() {
-  const sub = triple ? "3" : "2";
+  const sub = quad ? "4" : triple ? "3" : "2";
   levelDisplay.innerHTML = `${BACK}<sub>${sub}</sub>`;
   levelDisplay.style.fontFamily = ""; // Reset to default font
 }
@@ -215,7 +243,10 @@ function startGame() {
   buttonLeft.classList.remove("hidden");
   buttonRight.classList.remove("hidden");
   buttonPause.classList.remove("hidden");
-  if (triple) {
+  if (quad) {
+    buttonBottomLeft.classList.remove("hidden");
+    buttonBottomRight.classList.remove("hidden");
+  } else if (triple) {
     buttonBottom.classList.remove("hidden");
   }
 
@@ -260,6 +291,8 @@ function togglePause() {
     buttonLeft.classList.remove("pressed", "correct", "incorrect");
     buttonRight.classList.remove("pressed", "correct", "incorrect");
     buttonBottom.classList.remove("pressed", "correct", "incorrect");
+    buttonBottomLeft.classList.remove("pressed", "correct", "incorrect");
+    buttonBottomRight.classList.remove("pressed", "correct", "incorrect");
 
     // Hide button text during pause
     updateButtonVisibility(false);
@@ -283,10 +316,12 @@ function togglePause() {
       {
         BACK,
         triple,
+        quad,
         total,
         correctPosC,
         correctColC,
         correctLetC,
+        correctShapeC,
         roundResults,
       },
       resumeGame,
@@ -341,6 +376,10 @@ async function endGame() {
   buttonRight.classList.remove("pressed", "correct", "incorrect");
   buttonBottom.classList.add("hidden");
   buttonBottom.classList.remove("pressed", "correct", "incorrect");
+  buttonBottomLeft.classList.add("hidden");
+  buttonBottomLeft.classList.remove("pressed", "correct", "incorrect");
+  buttonBottomRight.classList.add("hidden");
+  buttonBottomRight.classList.remove("pressed", "correct", "incorrect");
   buttonPause.classList.add("hidden");
 
   // Clear active states
@@ -368,10 +407,12 @@ async function endGame() {
     await addSession({
       BACK,
       triple,
+      quad,
       total,
       correctPosC,
       correctColC,
       correctLetC,
+      correctShapeC,
       roundResults,
     });
   }
@@ -380,10 +421,12 @@ async function endGame() {
   Modals.showResults({
     BACK,
     triple,
+    quad,
     total,
     correctPosC,
     correctColC,
     correctLetC,
+    correctShapeC,
     roundResults,
   });
 }
@@ -413,6 +456,10 @@ function restartGame() {
   buttonRight.classList.remove("pressed", "correct", "incorrect");
   buttonBottom.classList.add("hidden");
   buttonBottom.classList.remove("pressed", "correct", "incorrect");
+  buttonBottomLeft.classList.add("hidden");
+  buttonBottomLeft.classList.remove("pressed", "correct", "incorrect");
+  buttonBottomRight.classList.add("hidden");
+  buttonBottomRight.classList.remove("pressed", "correct", "incorrect");
   buttonPause.classList.add("hidden");
 
   // Clear active states
@@ -475,18 +522,24 @@ function updateButtonVisibility(canAnswer) {
   const leftSpan = buttonLeft.querySelector("span");
   const rightSpan = buttonRight.querySelector("span");
   const bottomSpan = buttonBottom.querySelector("span");
+  const bottomLeftSpan = buttonBottomLeft.querySelector("span");
+  const bottomRightSpan = buttonBottomRight.querySelector("span");
 
   if (leftSpan) leftSpan.style.opacity = canAnswer ? "1" : "0";
   if (rightSpan) rightSpan.style.opacity = canAnswer ? "1" : "0";
-  if (triple && bottomSpan) {
+  if (triple && bottomSpan && !quad) {
     bottomSpan.style.opacity = canAnswer ? "1" : "0";
+  }
+  if (quad) {
+    if (bottomLeftSpan) bottomLeftSpan.style.opacity = canAnswer ? "1" : "0";
+    if (bottomRightSpan) bottomRightSpan.style.opacity = canAnswer ? "1" : "0";
   }
 }
 
 // Generate step
 function generateStep(prev) {
   const randomIndex = Math.floor(Math.random() * 9);
-  let position, color, letter;
+  let position, color, letter, shape;
 
   if (prev && Math.random() < 0.3) {
     // 30% chance to match previous
@@ -496,13 +549,16 @@ function generateStep(prev) {
       triple && Math.random() < 0.5
         ? prev.letter
         : Math.floor(Math.random() * 9);
+    shape =
+      quad && Math.random() < 0.5 ? prev.shape : Math.floor(Math.random() * 9);
   } else {
     position = randomIndex;
     color = Math.floor(Math.random() * 9);
     letter = Math.floor(Math.random() * 9);
+    shape = Math.floor(Math.random() * 9);
   }
 
-  return { position, color, letter };
+  return { position, color, letter, shape };
 }
 
 // Render step
@@ -517,6 +573,13 @@ function render(step) {
   square.classList.add("active");
   square.style.setProperty("--active-color", colorValue);
   square.style.setProperty("--timer-duration", `${TOTAL_TIME() / 1000}s`);
+
+  // Handle Shapes (Quad mode)
+  // Reset any previous shape classes
+  square.classList.remove(...shapeIndices.map((s) => `shape-${s}`));
+  // Apply new shape class (default to 0 if not quad)
+  const shapeIndex = quad ? step.shape : 0;
+  square.classList.add(`shape-${shapeIndex}`);
 
   // Show letter if triple mode
   if (triple) {
@@ -541,6 +604,10 @@ function unrender(step) {
   if (letterCircle) {
     letterCircle.remove();
   }
+
+  // Reset shape to square (0) for cleaner look when inactive
+  square.classList.remove(...shapeIndices.map((s) => `shape-${s}`));
+  square.classList.add("shape-0"); // Optional: reset to square
 
   // Clean up was-active class after shake completes
   setTimeout(() => {
@@ -657,6 +724,18 @@ buttonBottom.addEventListener("mousedown", (e) => {
   toggleButton(buttonBottom, "letter");
 });
 
+buttonBottomLeft.addEventListener("mousedown", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  toggleButton(buttonBottomLeft, "letter");
+});
+
+buttonBottomRight.addEventListener("mousedown", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  toggleButton(buttonBottomRight, "shape");
+});
+
 // Check answers at end of round and provide feedback
 function checkAnswers() {
   if (history.length < 1 + BACK) return;
@@ -690,7 +769,17 @@ function checkAnswers() {
     letCorrect =
       (letMatch && lastReply.letter) || (!letMatch && !lastReply.letter);
     if (letCorrect) correctLetC++;
-    flashButton(buttonBottom, letCorrect);
+    flashButton(quad ? buttonBottomLeft : buttonBottom, letCorrect);
+  }
+
+  // Check shape (if quad mode)
+  let shapeCorrect = true;
+  if (quad) {
+    const shapeMatch = current.shape === prev.shape;
+    shapeCorrect =
+      (shapeMatch && lastReply.shape) || (!shapeMatch && !lastReply.shape);
+    if (shapeCorrect) correctShapeC++;
+    flashButton(buttonBottomRight, shapeCorrect);
   }
 
   // Store round result for visualization
@@ -698,10 +787,12 @@ function checkAnswers() {
     position: posCorrect,
     color: colCorrect,
     letter: triple ? letCorrect : null,
+    shape: quad ? shapeCorrect : null,
   });
 
   // Perfect round celebration
-  const isPerfect = posCorrect && colCorrect && letCorrect;
+  const isPerfect =
+    posCorrect && colCorrect && letCorrect && (quad ? shapeCorrect : true);
   if (isPerfect) {
     perfectRounds++; // Increment fire gradient progress
     setTimeout(() => {
@@ -963,12 +1054,19 @@ document.addEventListener("keydown", (e) => {
     // Letter (bottom button) - only in triple mode
     if (triple) {
       e.preventDefault();
-      toggleButton(buttonBottom, "letter");
+      // Use logic to determine which button to toggle
+      toggleButton(quad ? buttonBottomLeft : buttonBottom, "letter");
     }
   } else if (key === "c") {
     // Color (right button)
     e.preventDefault();
     toggleButton(buttonRight, "color");
+  } else if (key === "v") {
+    // Shape (bottom right button) - only in quad mode
+    if (quad) {
+      e.preventDefault();
+      toggleButton(buttonBottomRight, "shape");
+    }
   }
 });
 

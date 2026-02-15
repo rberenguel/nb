@@ -11,6 +11,7 @@ function decodeRoundResults(encodedResults) {
     position: (val & 1) !== 0,
     color: (val & 2) !== 0,
     letter: (val & 4) !== 0,
+    shape: (val & 8) !== 0,
   }));
 }
 
@@ -20,7 +21,7 @@ function decodeRoundResults(encodedResults) {
  * @param {boolean} triple - Whether triple mode
  * @returns {string} HTML string for the mini grid
  */
-function renderMiniProgressGrid(encodedResults, triple) {
+function renderMiniProgressGrid(encodedResults, triple, quad) {
   if (!encodedResults || encodedResults.length === 0) {
     return '<div class="mini-grid-placeholder"></div>';
   }
@@ -35,9 +36,15 @@ function renderMiniProgressGrid(encodedResults, triple) {
       html += '<div class="mini-cell empty"></div>';
     } else {
       const allCorrect =
-        result.position && result.color && (!triple || result.letter);
+        result.position &&
+        result.color &&
+        (!triple || result.letter) &&
+        (!quad || result.shape);
       const anyCorrect =
-        result.position || result.color || (triple && result.letter);
+        result.position ||
+        result.color ||
+        (triple && result.letter) ||
+        (quad && result.shape);
 
       let cellClass = "mini-cell";
       if (allCorrect) {
@@ -62,14 +69,16 @@ function renderMiniProgressGrid(encodedResults, triple) {
  * @param {boolean} triple - Whether triple mode
  * @returns {string} HTML string for the grid
  */
-function renderProgressGrid(roundResults, triple) {
+function renderProgressGrid(roundResults, triple, quad) {
   if (!roundResults || roundResults.length === 0) {
     return '<p style="opacity: 0.7; text-align: center;">No rounds completed yet</p>';
   }
 
   let html =
     '<div style="font-size: 0.85rem; opacity: 0.7; margin-bottom: 0.5rem;">';
-  if (triple) {
+  if (quad) {
+    html += "Top: Pos, Mid1: Col, Mid2: Let, Bot: Shp";
+  } else if (triple) {
     html += "Top: Position, Mid: Color, Bot: Letter";
   } else {
     html += "Top: Position, Bot: Color";
@@ -95,9 +104,14 @@ function renderProgressGrid(roundResults, triple) {
       // Color (middle/bottom bar)
       html += `<div class="cell-bar" style="background-color: ${result.color ? "#22c55e" : "#ef4444"}"></div>`;
 
-      // Letter (bottom bar, only in triple mode)
-      if (triple) {
+      // Letter (bottom bar, only in triple/quad mode)
+      if (triple || quad) {
         html += `<div class="cell-bar" style="background-color: ${result.letter ? "#22c55e" : "#ef4444"}"></div>`;
+      }
+
+      // Shape (bottom bar, only in quad mode)
+      if (quad) {
+        html += `<div class="cell-bar" style="background-color: ${result.shape ? "#22c55e" : "#ef4444"}"></div>`;
       }
 
       html += "</div>";
@@ -190,16 +204,31 @@ export function showPauseStats(stats, onClose) {
     stats.triple && stats.total > 0
       ? Math.round((100 * stats.correctLetC) / stats.total)
       : 0;
-  const totalAnswers = stats.triple ? stats.total * 3 : stats.total * 2;
-  const correctAnswers = stats.triple
-    ? stats.correctPosC + stats.correctColC + stats.correctLetC
-    : stats.correctPosC + stats.correctColC;
+  const pctShape =
+    stats.quad && stats.total > 0
+      ? Math.round((100 * stats.correctShapeC) / stats.total)
+      : 0;
+
+  let totalFactors = 2;
+  if (stats.quad) totalFactors = 4;
+  else if (stats.triple) totalFactors = 3;
+
+  const totalAnswers = stats.total * totalFactors;
+  const correctAnswers = stats.quad
+    ? stats.correctPosC +
+      stats.correctColC +
+      stats.correctLetC +
+      stats.correctShapeC
+    : stats.triple
+      ? stats.correctPosC + stats.correctColC + stats.correctLetC
+      : stats.correctPosC + stats.correctColC;
+
   const overall =
     totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0;
 
   // Update modal content
   document.getElementById("pause-level").textContent =
-    `Level: ${stats.BACK}-back ${stats.triple ? "(Triple)" : "(Dual)"}`;
+    `Level: ${stats.BACK}-back ${stats.quad ? "(Quad)" : stats.triple ? "(Triple)" : "(Dual)"}`;
   document.getElementById("pause-rounds").textContent =
     `Rounds: ${stats.total} / 100`;
   document.getElementById("pause-overall").textContent = `Overall: ${overall}%`;
@@ -216,10 +245,27 @@ export function showPauseStats(stats, onClose) {
     pauseLetter.classList.add("hidden");
   }
 
+  const pauseShape = document.getElementById("pause-shape");
+  // Check if element exists (need to add it to HTML first in next step, but let's handle JS now)
+  // I will create the element in JS if it doesn't exist? No, better to assume it exists or add logical check.
+  // I'll add the element to HTML later.
+  if (pauseShape) {
+    if (stats.quad) {
+      pauseShape.textContent = `Shape: ${stats.correctShapeC}/${stats.total} (${pctShape}%)`;
+      pauseShape.classList.remove("hidden");
+    } else {
+      pauseShape.classList.add("hidden");
+    }
+  }
+
   // Add progress grid visualization
   const pauseGrid = document.getElementById("pause-grid");
   if (pauseGrid) {
-    pauseGrid.innerHTML = renderProgressGrid(stats.roundResults, stats.triple);
+    pauseGrid.innerHTML = renderProgressGrid(
+      stats.roundResults,
+      stats.triple,
+      stats.quad,
+    );
   }
 
   showModal(modalPause, onClose);
@@ -230,15 +276,24 @@ export function showPauseStats(stats, onClose) {
  * @param {Object} stats - Game statistics (same structure as pause stats)
  */
 export function showResults(stats) {
-  const totalAnswers = stats.triple ? stats.total * 3 : stats.total * 2;
-  const correctAnswers = stats.triple
-    ? stats.correctPosC + stats.correctColC + stats.correctLetC
-    : stats.correctPosC + stats.correctColC;
+  let totalFactors = 2;
+  if (stats.quad) totalFactors = 4;
+  else if (stats.triple) totalFactors = 3;
+
+  const totalAnswers = stats.total * totalFactors;
+  const correctAnswers = stats.quad
+    ? stats.correctPosC +
+      stats.correctColC +
+      stats.correctLetC +
+      stats.correctShapeC
+    : stats.triple
+      ? stats.correctPosC + stats.correctColC + stats.correctLetC
+      : stats.correctPosC + stats.correctColC;
   const percentage = Math.round((correctAnswers / totalAnswers) * 100);
 
   // Update modal content
   document.getElementById("results-level").textContent =
-    `Level: ${stats.BACK}-back ${stats.triple ? "(Triple)" : "(Dual)"}`;
+    `Level: ${stats.BACK}-back ${stats.quad ? "(Quad)" : stats.triple ? "(Triple)" : "(Dual)"}`;
   document.getElementById("results-rounds").textContent =
     `Rounds: ${stats.total}`;
   document.getElementById("results-overall").textContent =
@@ -254,6 +309,17 @@ export function showResults(stats) {
     resultsLetter.classList.remove("hidden");
   } else {
     resultsLetter.classList.add("hidden");
+  }
+
+  const resultsShape = document.getElementById("results-shape");
+  if (resultsShape) {
+    if (stats.quad) {
+      const pctShape = Math.round((stats.correctShapeC / stats.total) * 100);
+      resultsShape.textContent = `Shape: ${stats.correctShapeC}/${stats.total} (${pctShape}%)`;
+      resultsShape.classList.remove("hidden");
+    } else {
+      resultsShape.classList.add("hidden");
+    }
   }
 
   // Add level suggestion based on performance
@@ -279,6 +345,7 @@ export function showResults(stats) {
     resultsGrid.innerHTML = renderProgressGrid(
       stats.roundResults,
       stats.triple,
+      stats.quad,
     );
   }
 
@@ -491,7 +558,7 @@ function showDayDetails(dateKey, daySessions) {
     const minutes = String(time.getMinutes()).padStart(2, "0");
     const timeStr = `${hours}:${minutes}`;
 
-    const mode = session.triple ? "Triple" : "Dual";
+    const mode = session.quad ? "Quad" : session.triple ? "Triple" : "Dual";
     const pctPos = Math.round(session.pctPos);
     const pctCol = Math.round(session.pctCol);
     const pctLet = session.triple ? Math.round(session.pctLet) : null;
@@ -499,6 +566,7 @@ function showDayDetails(dateKey, daySessions) {
     const miniGrid = renderMiniProgressGrid(
       session.roundResults,
       session.triple,
+      session.quad,
     );
 
     html += `
@@ -513,6 +581,7 @@ function showDayDetails(dateKey, daySessions) {
               <span>Pos: ${pctPos}%</span>
               <span>Col: ${pctCol}%</span>
               ${pctLet !== null ? `<span>Let: ${pctLet}%</span>` : ""}
+              ${session.quad ? `<span>Shp: ${Math.round(session.pctShape)}%</span>` : ""}
             </div>
           </div>
           ${miniGrid}
@@ -560,17 +629,31 @@ function showSessionDetail(session) {
 
   const dateStr = `${year}${month}${day} @ ${hours}:${minutes} (${dayName})`;
 
-  const mode = session.triple ? "Triple" : "Dual";
+  const mode = session.quad ? "Quad" : session.triple ? "Triple" : "Dual";
   const pctPos = Math.round(session.pctPos);
   const pctCol = Math.round(session.pctCol);
   const pctLet = session.triple ? Math.round(session.pctLet) : null;
+  const pctShape = session.quad ? Math.round(session.pctShape) : null;
 
   // Calculate overall percentage
-  const totalAnswers = session.triple ? 300 : 200;
-  const correctAnswers = session.triple
-    ? session.pctPos + session.pctCol + session.pctLet
-    : session.pctPos + session.pctCol;
-  const overall = Math.round(correctAnswers / (session.triple ? 3 : 2));
+  let totalFactors = 2;
+  if (session.quad) totalFactors = 4;
+  else if (session.triple) totalFactors = 3;
+
+  const totalAnswers = session.quad ? 400 : session.triple ? 300 : 200; // Actually total rounds * factors, but logic below was simpler
+  // Correction: session doesn't store total rounds count explicitly in 'total'?
+  // It stores pctPos etc.
+  // Wait, session storage has 'level', 'triple', 'quad', 'pctPos', etc.
+  // And 'roundResults'.
+  // The original code calculated overall from pcts:
+
+  const correctAnswers = session.quad
+    ? session.pctPos + session.pctCol + session.pctLet + session.pctShape
+    : session.triple
+      ? session.pctPos + session.pctCol + session.pctLet
+      : session.pctPos + session.pctCol;
+
+  const overall = Math.round(correctAnswers / totalFactors);
 
   // Decode round results for the progress grid
   const roundResults = decodeRoundResults(session.roundResults);
@@ -594,12 +677,23 @@ function showSessionDetail(session) {
     sessionDetailLetter.classList.add("hidden");
   }
 
+  const sessionDetailShape = document.getElementById("session-detail-shape");
+  if (sessionDetailShape) {
+    if (session.quad) {
+      sessionDetailShape.textContent = `Shape: ${pctShape}%`;
+      sessionDetailShape.classList.remove("hidden");
+    } else {
+      sessionDetailShape.classList.add("hidden");
+    }
+  }
+
   // Add progress grid visualization
   const sessionDetailGrid = document.getElementById("session-detail-grid");
   if (sessionDetailGrid) {
     sessionDetailGrid.innerHTML = renderProgressGrid(
       roundResults,
       session.triple,
+      session.quad,
     );
   }
 

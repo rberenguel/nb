@@ -294,6 +294,7 @@ body {
   background-color: var(--active-color);
   animation: timer-countdown var(--timer-duration) linear forwards;
   z-index: 0;
+  clip-path: inherit;
 }
 
 @keyframes timer-countdown {
@@ -304,6 +305,36 @@ body {
     inset: 0;
   }
 }
+
+/* Shapes for Quad Mode */
+/* Shapes for Quad Mode */
+.shape-0 {
+  clip-path: inset(0% 0% 0% 0% round 1rem);
+} /* Square (Rounded) */
+.shape-1 {
+  clip-path: circle(50% at 50% 50%);
+} /* Circle */
+.shape-2 {
+  clip-path: url(#shape-triangle-up);
+} /* Triangle Up */
+.shape-3 {
+  clip-path: url(#shape-triangle-down);
+} /* Triangle Down */
+.shape-4 {
+  clip-path: url(#shape-diamond);
+} /* Diamond */
+.shape-5 {
+  clip-path: url(#shape-star);
+} /* Star */
+.shape-6 {
+  clip-path: url(#shape-trapezoid);
+} /* Trapezoid */
+.shape-7 {
+  clip-path: url(#shape-pentagon);
+} /* Pentagon */
+.shape-8 {
+  clip-path: url(#shape-octagon);
+} /* Octagon */
 
 @keyframes shake {
   0%,
@@ -482,15 +513,15 @@ body {
 .bottom-button {
   position: fixed;
   bottom: 0;
-  left: 25%;
-  right: 25%;
-  height: 15%;
+  left: 0;
+  right: 0;
+  height: 30%; /* Increased from 15% to 30% */
   display: flex;
   align-items: end;
   justify-content: center;
   background-color: rgba(0, 0, 0, 0);
   cursor: pointer;
-  z-index: 50;
+  z-index: 60; /* Increased to cover side buttons */
   transition: background-color 0.2s ease;
 }
 
@@ -542,6 +573,48 @@ body {
   font-weight: 300;
   padding: 0.5rem 1rem;
   transition: opacity 0.3s ease;
+}
+
+/* Bottom Split Buttons (Quad Mode) */
+.bottom-split-button {
+  position: fixed;
+  bottom: 0;
+  height: 25%; /* Reduced from 35% to 25% */
+  width: 50%; /* Increased from 25% */
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0);
+  cursor: pointer;
+  z-index: 60; /* Higher than side buttons (50) */
+  transition: background-color 0.2s ease;
+}
+
+/* ... keep other styles ... */
+
+.bottom-split-button::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2.5rem;
+  background-color: transparent;
+  z-index: -1;
+  transition: background-color 0.3s ease;
+}
+
+/* ... keep intervening styles ... */
+
+#button-bottom-left {
+  left: 0; /* Align to left edge */
+  padding-right: 2rem; /* Visual separation from center */
+}
+
+#button-bottom-right {
+  right: 0; /* Align to right edge */
+  left: auto; /* Override previous left positioning */
+  padding-left: 2rem; /* Visual separation from center */
 }
 
 /* Pause button (middle area) */
