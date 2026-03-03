@@ -53,6 +53,10 @@ const FireSystem = {
    * Spawns, updates, and renders particles
    */
   loop() {
+    if (this.progress === 0 && this.particles.length === 0) {
+      requestAnimationFrame(this.loop);
+      return;
+    }
     const { ctx, canvas, particles, fillInset, progress } = this;
     const width = canvas.width / (window.devicePixelRatio || 1);
     const height = canvas.height / (window.devicePixelRatio || 1);

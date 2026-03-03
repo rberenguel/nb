@@ -123,6 +123,38 @@ function renderProgressGrid(roundResults, triple, quad) {
   return html;
 }
 
+/**
+ * Compute current training streak in days.
+ * Counts consecutive days with sessions ending today (or yesterday if today
+ * has no sessions yet, so the streak doesn't vanish on a fresh morning).
+ * @param {Array} sessions - Array of session objects
+ * @returns {number} Streak length in days
+ */
+function computeStreak(sessions) {
+  if (!sessions || sessions.length === 0) return 0;
+
+  const daySet = new Set();
+  sessions.forEach((s) => {
+    const d = new Date(s.date);
+    daySet.add(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`);
+  });
+
+  // Start from today; if nothing today yet, start from yesterday
+  const check = new Date();
+  check.setHours(0, 0, 0, 0);
+  const todayKey = `${check.getFullYear()}-${check.getMonth()}-${check.getDate()}`;
+  if (!daySet.has(todayKey)) {
+    check.setDate(check.getDate() - 1);
+  }
+
+  let streak = 0;
+  while (daySet.has(`${check.getFullYear()}-${check.getMonth()}-${check.getDate()}`)) {
+    streak++;
+    check.setDate(check.getDate() - 1);
+  }
+  return streak;
+}
+
 // DOM elements
 const modal = document.getElementById("modal");
 const modalInstructions = document.getElementById("modal-instructions");
@@ -445,12 +477,18 @@ function renderCalendar(sessions) {
     year: "numeric",
   });
 
+  const streak = computeStreak(sessions);
+  const streakHtml = streak > 0
+    ? `<div class="calendar-streak"><span class="streak-icon">\ue2de</span> ${streak}-day streak</div>`
+    : "";
+
   let html = `
     <div class="calendar-header">
       <button class="calendar-nav" id="prev-month">&larr;</button>
       <h3>${monthName}</h3>
       <button class="calendar-nav" id="next-month">&rarr;</button>
     </div>
+    ${streakHtml}
     <div class="calendar-grid">
       <div class="calendar-day-header">Mon</div>
       <div class="calendar-day-header">Tue</div>
@@ -758,6 +796,26 @@ modalSessionDetail.addEventListener("click", (e) => {
     renderCalendar(calendarSessions); // Re-render calendar to restore state
   }
 });
+
+// Swipe gesture for calendar month navigation
+let swipeStartX = 0;
+let swipeStartY = 0;
+const historyListEl = document.getElementById("history-list");
+
+historyListEl.addEventListener("touchstart", (e) => {
+  swipeStartX = e.touches[0].clientX;
+  swipeStartY = e.touches[0].clientY;
+}, { passive: true });
+
+historyListEl.addEventListener("touchend", (e) => {
+  const dx = e.changedTouches[0].clientX - swipeStartX;
+  const dy = e.changedTouches[0].clientY - swipeStartY;
+  // Require horizontal dominance and minimum distance to avoid interfering with scrolling
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+    currentViewDate.setMonth(currentViewDate.getMonth() + (dx < 0 ? 1 : -1));
+    renderCalendar(calendarSessions);
+  }
+}, { passive: true });
 
 // Export for external access (keyboard shortcuts)
 export { modal };

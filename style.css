@@ -656,9 +656,10 @@ body {
   padding: 2rem;
   border-radius: 0.5rem;
   border: 2px solid var(--dark);
-  max-width: 90%;
-  max-height: 80%;
+  max-width: 95%;
+  max-height: 95%;
   overflow-y: auto;
+  overflow-x: hidden;
   font-size: 1rem;
   color: var(--text-color);
   font-family: "Monoid", monospace;
@@ -726,7 +727,37 @@ body {
   overflow-y: auto;
 }
 
+/* Fixed-height modals so layout doesn't shift with content */
+#modal-history,
+#modal-pause {
+  height: 90%;
+}
+
+#modal-history {
+  width: 95%;
+  display: flex;
+  flex-direction: column;
+}
+
+#modal-history #history-list {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+}
+
 /* Calendar view styles */
+.calendar-streak {
+  text-align: center;
+  font-size: 0.85rem;
+  opacity: 0.85;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.03rem;
+}
+
+.streak-icon {
+  font-family: "Phosphor-Light";
+}
+
 .calendar-header {
   display: flex;
   align-items: center;
@@ -1059,6 +1090,29 @@ body {
 
   .square:hover {
     transform: scale(1.02);
+  }
+}
+
+/* Mobile: tighter modal and smaller calendar typography */
+@media (max-width: 767px) {
+  .modal-content {
+    padding: 1rem;
+  }
+
+  .modal-content h2 {
+    font-size: 1.1rem;
+  }
+
+  .calendar-header h3 {
+    font-size: 0.9rem;
+  }
+
+  .calendar-grid {
+    gap: 0.15rem;
+  }
+
+  .calendar-day {
+    padding: 0.15rem;
   }
 }
 
